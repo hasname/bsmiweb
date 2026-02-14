@@ -1,4 +1,7 @@
-.PHONY: run-engineering test
+.PHONY: lint run-engineering test
+
+lint:
+	npm run lint
 
 run-engineering:
 	npm start
