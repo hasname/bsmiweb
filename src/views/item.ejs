@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <title><%= registration.id %> — BSMI 檢驗標識查詢</title>
+<meta property="og:title" content="<%= registration.id %> — BSMI 檢驗標識查詢">
+<meta property="og:description" content="<%= registration.applicant %>（統編 <%= registration.taxId %>）— 共 <%= registration.certificates.length %> 張證書">
+<meta property="og:type" content="website">
 <style>
 body { font-family: sans-serif; margin: 2em; }
 table { border-collapse: collapse; width: 100%; margin-top: 1em; }
