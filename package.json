@@ -7,19 +7,22 @@
   "scripts": {
     "start": "node src/index.js",
     "lint": "eslint .",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest"
+    "test": "DATABASE_URL='file::memory:' NODE_OPTIONS='--experimental-vm-modules' jest"
   },
   "author": "Gea-Suan Lin <gslin@gslin.com>",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^7.4.0",
     "express": "^5.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.2.0",
+    "dotenv": "^17.3.1",
     "eslint": "^10.0.0",
     "globals": "^17.3.0",
     "jest": "^30.2.0",
+    "prisma": "^7.4.0",
     "supertest": "^7.2.2"
   }
 }
