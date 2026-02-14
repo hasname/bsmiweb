@@ -83,11 +83,11 @@ beforeEach(async () => {
   await prisma.registration.deleteMany();
 });
 
-describe("GET /item/:id", () => {
+describe("GET /bsmi/:id", () => {
   it("should return 200 for valid ID from BSMI", async () => {
     mockFetchBsmi.mockResolvedValue(sampleData);
 
-    const res = await request(app).get("/item/R45879");
+    const res = await request(app).get("/bsmi/R45879");
     expect(res.status).toBe(200);
     expect(res.text).toContain("R45879");
     expect(res.text).toContain("82781974");
@@ -97,31 +97,31 @@ describe("GET /item/:id", () => {
   it("should return data from DB on second request", async () => {
     mockFetchBsmi.mockResolvedValue(sampleData);
 
-    await request(app).get("/item/R45879");
+    await request(app).get("/bsmi/R45879");
     mockFetchBsmi.mockReset();
 
-    const res = await request(app).get("/item/R45879");
+    const res = await request(app).get("/bsmi/R45879");
     expect(res.status).toBe(200);
     expect(res.text).toContain("R45879");
     expect(mockFetchBsmi).not.toHaveBeenCalled();
   });
 
   it("should return 404 for invalid ID format", async () => {
-    const res = await request(app).get("/item/INVALID");
+    const res = await request(app).get("/bsmi/INVALID");
     expect(res.status).toBe(404);
   });
 
   it("should return 404 for ID not found on BSMI", async () => {
     mockFetchBsmi.mockResolvedValue(null);
 
-    const res = await request(app).get("/item/R00000");
+    const res = await request(app).get("/bsmi/R00000");
     expect(res.status).toBe(404);
   });
 
   it("should accept lowercase ID", async () => {
     mockFetchBsmi.mockResolvedValue(sampleData);
 
-    const res = await request(app).get("/item/r45879");
+    const res = await request(app).get("/bsmi/r45879");
     expect(res.status).toBe(200);
     expect(mockFetchBsmi).toHaveBeenCalledWith("R45879");
   });

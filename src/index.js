@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 
 const VALID_ID_RE = /^[RTDQMrtdqm][A-Za-z0-9]{5}$/;
 
-app.get("/item/:id", async (req, res, next) => {
+app.get("/bsmi/:id", async (req, res, next) => {
   try {
     const id = req.params.id.toUpperCase();
 
