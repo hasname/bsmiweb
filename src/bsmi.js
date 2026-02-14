@@ -100,6 +100,8 @@ export async function fetchBsmi(markId) {
     state: "queryAll",
     q_regType: type,
     q_regNo: no,
+    pageSize: "9999",
+    currentPage: "1",
   });
 
   const res = await fetch(BSMI_URL, {
