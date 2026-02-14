@@ -20,7 +20,7 @@ lint: node_modules
 	npm run lint
 
 run-engineering: db-push
-	npm start
+	node --watch src/index.js
 
 test: node_modules
 	npm test
