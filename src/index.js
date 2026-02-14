@@ -1,7 +1,13 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import express from "express";
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
