@@ -100,6 +100,7 @@ app.get("/bsmi/:id", async (req, res, next) => {
     }
 
     const canonicalUrl = `${req.protocol}://${req.get("host")}/bsmi/${registration.id}`;
+    res.set("Cache-Control", "public, max-age=3600");
     res.render("item", { registration, canonicalUrl });
   } catch (err) {
     next(err);
@@ -120,6 +121,7 @@ app.get("/ban/:id", async (req, res, next) => {
       return;
     }
 
+    res.set("Cache-Control", "public, max-age=3600");
     res.render("ban", { taxId, registrations });
   } catch (err) {
     next(err);
@@ -143,6 +145,7 @@ app.get("/sitemap.xml", async (req, res, next) => {
     }
     xml += "</urlset>\n";
 
+    res.set("Cache-Control", "public, max-age=3600");
     res.type("application/xml").send(xml);
   } catch (err) {
     next(err);
