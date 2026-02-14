@@ -42,7 +42,7 @@ dt { font-weight: bold; }
 <h2>廠商資料</h2>
 <dl>
   <dt>標識號碼</dt><dd><%= registration.id %></dd>
-  <dt>統編</dt><dd><%= registration.taxId %></dd>
+  <dt>統編</dt><dd><a href="/ban/<%= registration.taxId %>"><%= registration.taxId %></a></dd>
   <dt>申請人</dt><dd><%= registration.applicant %></dd>
   <dt>聯絡地址</dt><dd><%= registration.contactAddr %></dd>
   <dt>公司地址</dt><dd><%= registration.companyAddr %></dd>

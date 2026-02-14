@@ -64,6 +64,26 @@ app.get("/bsmi/:id", async (req, res, next) => {
   }
 });
 
+app.get("/ban/:id", async (req, res, next) => {
+  try {
+    const taxId = req.params.id;
+
+    const registrations = await prisma.registration.findMany({
+      where: { taxId },
+      orderBy: { id: "asc" },
+    });
+
+    if (registrations.length === 0) {
+      res.status(404).send("Not Found");
+      return;
+    }
+
+    res.render("ban", { taxId, registrations });
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get("/sitemap.xml", async (req, res, next) => {
   try {
     const registrations = await prisma.registration.findMany({
