@@ -1,13 +1,16 @@
 .PHONY: install lint run-engineering test
 
-install:
+node_modules: package.json package-lock.json
 	npm install
+	touch node_modules
 
-lint:
+install: node_modules
+
+lint: node_modules
 	npm run lint
 
-run-engineering:
+run-engineering: node_modules
 	npm start
 
-test:
+test: node_modules
 	npm test
