@@ -84,5 +84,37 @@ dd { margin: 0; }
 </tbody>
 </table>
 <% } %>
+
+<h2>授權資料</h2>
+<% if (authorizations.length === 0) { %>
+<p>無授權資料。</p>
+<% } else { %>
+<table>
+<thead>
+<tr>
+  <th>授權證號</th>
+  <th>證書編號</th>
+  <th>授權人名稱</th>
+  <th>主型式</th>
+  <th>被授權人名稱</th>
+  <th>被授權人統編</th>
+  <th>授權有效時間</th>
+</tr>
+</thead>
+<tbody>
+<% for (const auth of authorizations) { %>
+<tr>
+  <td><%= auth.id %></td>
+  <td><%= auth.certificateId %></td>
+  <td><%= auth.authorizerName %></td>
+  <td><%= auth.mainModel %></td>
+  <td><%= auth.authorizeeName %></td>
+  <td><a href="/ban/<%= auth.authorizeeTaxId %>"><%= auth.authorizeeTaxId %></a></td>
+  <td><%= auth.validDate %></td>
+</tr>
+<% } %>
+</tbody>
+</table>
+<% } %>
 </body>
 </html>

@@ -99,9 +99,17 @@ app.get("/bsmi/:id", async (req, res, next) => {
       registration = await upsertRegistration(data);
     }
 
+    const certIds = registration.certificates.map((c) => c.id);
+    const authorizations = certIds.length > 0
+      ? await prisma.authorization.findMany({
+          where: { certificateId: { in: certIds } },
+          orderBy: { id: "asc" },
+        })
+      : [];
+
     const canonicalUrl = `${req.protocol}://${req.get("host")}/bsmi/${registration.id}`;
     res.set("Cache-Control", "public, max-age=3600");
-    res.render("item", { registration, canonicalUrl });
+    res.render("item", { registration, authorizations, canonicalUrl });
   } catch (err) {
     next(err);
   }
@@ -121,8 +129,13 @@ app.get("/ban/:id", async (req, res, next) => {
       return;
     }
 
+    const authorizations = await prisma.authorization.findMany({
+      where: { authorizeeTaxId: taxId },
+      orderBy: { id: "asc" },
+    });
+
     res.set("Cache-Control", "public, max-age=3600");
-    res.render("ban", { taxId, registrations });
+    res.render("ban", { taxId, registrations, authorizations });
   } catch (err) {
     next(err);
   }

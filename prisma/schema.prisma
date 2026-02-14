@@ -42,3 +42,20 @@ model Certificate {
 
   @@index([registrationId])
 }
+
+model Authorization {
+  id              String   @id // 授權證號, e.g. "CI311072080028"
+  certificateId   String // 原始證書編號
+  authorizerName  String // 授權人名稱
+  mainModel       String // 主型式
+  authorizeeTaxId String // 被授權人統編
+  authorizeeName  String // 被授權人名稱
+  authorizeeAddr  String   @db.Text // 被授權人地址
+  authorizeePhone String // 被授權人電話
+  validDate       String // 授權有效時間, e.g. "2005/07/18"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([certificateId])
+  @@index([authorizeeTaxId])
+}
