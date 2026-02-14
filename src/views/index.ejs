@@ -2,8 +2,108 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
-<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BSMI 檢驗標識查詢</title>
+<style>
+body { font-family: sans-serif; margin: 2em; }
+table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+th { background: #f5f5f5; }
+form { margin-bottom: 2em; }
+input[type="text"] { padding: 0.5em; font-size: 1em; width: 20em; }
+button { padding: 0.5em 1em; font-size: 1em; }
+</style>
 </head>
 <body>
+<h1>BSMI 檢驗標識查詢</h1>
+
+<form method="get" action="/">
+  <input type="text" name="q" value="<%= q %>" placeholder="輸入關鍵字搜尋">
+  <button type="submit">搜尋</button>
+</form>
+
+<% if (q) { %>
+  <% if (registrations.length === 0 && certificates.length === 0 && authorizations.length === 0) { %>
+    <p>無搜尋結果。</p>
+  <% } %>
+
+  <% if (registrations.length > 0) { %>
+  <h2>檢驗標識</h2>
+  <table>
+  <thead>
+  <tr>
+    <th>標識號碼</th>
+    <th>統編</th>
+    <th>申請人</th>
+    <th>電話</th>
+  </tr>
+  </thead>
+  <tbody>
+  <% for (const reg of registrations) { %>
+  <tr>
+    <td><a href="/bsmi/<%= reg.id %>"><%= reg.id %></a></td>
+    <td><a href="/ban/<%= reg.taxId %>"><%= reg.taxId %></a></td>
+    <td><%= reg.applicant %></td>
+    <td><%= reg.phone %></td>
+  </tr>
+  <% } %>
+  </tbody>
+  </table>
+  <% } %>
+
+  <% if (certificates.length > 0) { %>
+  <h2>證書</h2>
+  <table>
+  <thead>
+  <tr>
+    <th>證書編號</th>
+    <th>標識號碼</th>
+    <th>產品名稱</th>
+    <th>主型式</th>
+    <th style="white-space: nowrap">狀態</th>
+  </tr>
+  </thead>
+  <tbody>
+  <% for (const cert of certificates) { %>
+  <tr>
+    <td><%= cert.id %></td>
+    <td><a href="/bsmi/<%= cert.registrationId %>"><%= cert.registrationId %></a></td>
+    <td><%= cert.productName %></td>
+    <td><%= cert.mainModel %></td>
+    <td><%= cert.status %></td>
+  </tr>
+  <% } %>
+  </tbody>
+  </table>
+  <% } %>
+
+  <% if (authorizations.length > 0) { %>
+  <h2>授權資料</h2>
+  <table>
+  <thead>
+  <tr>
+    <th>授權證號</th>
+    <th>證書編號</th>
+    <th>授權人名稱</th>
+    <th>主型式</th>
+    <th>被授權人名稱</th>
+    <th>被授權人統編</th>
+  </tr>
+  </thead>
+  <tbody>
+  <% for (const auth of authorizations) { %>
+  <tr>
+    <td><%= auth.id %></td>
+    <td><%= auth.certificateId %></td>
+    <td><%= auth.authorizerName %></td>
+    <td><%= auth.mainModel %></td>
+    <td><%= auth.authorizeeName %></td>
+    <td><a href="/ban/<%= auth.authorizeeTaxId %>"><%= auth.authorizeeTaxId %></a></td>
+  </tr>
+  <% } %>
+  </tbody>
+  </table>
+  <% } %>
+<% } %>
 </body>
 </html>

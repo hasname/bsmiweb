@@ -40,8 +40,67 @@ app.response.render = function (view, options, callback) {
   });
 };
 
-app.get("/", (req, res) => {
-  res.render("index");
+app.get("/", async (req, res, next) => {
+  try {
+    const q = req.query.q;
+    if (!q) {
+      res.render("index", { q: "", registrations: [], certificates: [], authorizations: [] });
+      return;
+    }
+
+    const likeFilter = { contains: q };
+
+    const [registrations, certificates, authorizations] = await Promise.all([
+      prisma.registration.findMany({
+        where: {
+          OR: [
+            { id: likeFilter },
+            { taxId: likeFilter },
+            { applicant: likeFilter },
+            { contactAddr: likeFilter },
+            { companyAddr: likeFilter },
+            { phone: likeFilter },
+            { note: likeFilter },
+          ],
+        },
+        orderBy: { id: "asc" },
+        take: 100,
+      }),
+      prisma.certificate.findMany({
+        where: {
+          OR: [
+            { id: likeFilter },
+            { productName: likeFilter },
+            { mainModel: likeFilter },
+            { seriesModels: likeFilter },
+            { issuer: likeFilter },
+          ],
+        },
+        orderBy: { id: "asc" },
+        take: 100,
+      }),
+      prisma.authorization.findMany({
+        where: {
+          OR: [
+            { id: likeFilter },
+            { certificateId: likeFilter },
+            { authorizerName: likeFilter },
+            { mainModel: likeFilter },
+            { authorizeeTaxId: likeFilter },
+            { authorizeeName: likeFilter },
+            { authorizeeAddr: likeFilter },
+            { authorizeePhone: likeFilter },
+          ],
+        },
+        orderBy: { id: "asc" },
+        take: 100,
+      }).catch(() => []),
+    ]);
+
+    res.render("index", { q, registrations, certificates, authorizations });
+  } catch (err) {
+    next(err);
+  }
 });
 
 const VALID_ID_RE = /^[RTDQMrtdqm][A-Za-z0-9]{5}$/;
