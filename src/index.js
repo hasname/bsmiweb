@@ -23,20 +23,24 @@ app.get("/", (req, res) => {
 
 const VALID_ID_RE = /^[RTDQMrtdqm][A-Za-z0-9]{5}$/;
 
+async function upsertRegistration(data) {
+  const { certificates, ...vendor } = data;
+  return await prisma.$transaction(async (tx) => {
+    await tx.certificate.deleteMany({ where: { registrationId: vendor.id } });
+    return await tx.registration.upsert({
+      where: { id: vendor.id },
+      create: { ...vendor, certificates: { create: certificates } },
+      update: { ...vendor, certificates: { create: certificates } },
+      include: { certificates: true },
+    });
+  });
+}
+
 async function refreshRegistration(id) {
   try {
     const data = await fetchBsmi(id);
     if (!data) return;
-
-    const { certificates, ...vendor } = data;
-    await prisma.certificate.deleteMany({ where: { registrationId: id } });
-    await prisma.registration.update({
-      where: { id },
-      data: {
-        ...vendor,
-        certificates: { create: certificates },
-      },
-    });
+    await upsertRegistration(data);
   } catch (err) {
     console.error(`Background refresh failed for ${id}:`, err.message);
   }
@@ -69,16 +73,7 @@ app.get("/bsmi/:id", async (req, res, next) => {
         return;
       }
 
-      const { certificates, ...vendor } = data;
-      registration = await prisma.registration.create({
-        data: {
-          ...vendor,
-          certificates: {
-            create: certificates,
-          },
-        },
-        include: { certificates: true },
-      });
+      registration = await upsertRegistration(data);
     }
 
     const canonicalUrl = `${req.protocol}://${req.get("host")}/bsmi/${registration.id}`;
