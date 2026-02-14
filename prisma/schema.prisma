@@ -12,3 +12,33 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+model Registration {
+  id           String        @id // e.g. "R45879"
+  taxId        String // 統編
+  applicant    String // 申請人
+  contactAddr  String        @db.Text // 聯絡地址
+  companyAddr  String        @db.Text // 公司地址
+  phone        String // 電話
+  note         String        @db.Text // 廠商資料備註
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  certificates Certificate[]
+}
+
+model Certificate {
+  id             String       @id // 證書編號, e.g. "CI450068790054"
+  registrationId String
+  validDate      String // 有效期間 (民國日期, e.g. "1130202")
+  status         String // 證書狀態 (認可/期限到期失效/註銷)
+  productName    String       @db.Text // 產品中文名稱
+  soldAs         String       @db.Text // 以他人名義銷售
+  mainModel      String // 主型式
+  seriesModels   String       @db.Text // 系列型號 (newline-separated)
+  issuer         String // 發證單位
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  @@index([registrationId])
+}
