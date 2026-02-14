@@ -23,6 +23,25 @@ app.get("/", (req, res) => {
 
 const VALID_ID_RE = /^[RTDQMrtdqm][A-Za-z0-9]{5}$/;
 
+async function refreshRegistration(id) {
+  try {
+    const data = await fetchBsmi(id);
+    if (!data) return;
+
+    const { certificates, ...vendor } = data;
+    await prisma.certificate.deleteMany({ where: { registrationId: id } });
+    await prisma.registration.update({
+      where: { id },
+      data: {
+        ...vendor,
+        certificates: { create: certificates },
+      },
+    });
+  } catch (err) {
+    console.error(`Background refresh failed for ${id}:`, err.message);
+  }
+}
+
 app.get("/bsmi/:id", async (req, res, next) => {
   try {
     const id = req.params.id.toUpperCase();
@@ -32,13 +51,18 @@ app.get("/bsmi/:id", async (req, res, next) => {
       return;
     }
 
-    // Check DB first
     let registration = await prisma.registration.findUnique({
       where: { id },
       include: { certificates: true },
     });
 
-    if (!registration) {
+    if (registration) {
+      // Refresh in background if stale (> 86400s)
+      const ageMs = Date.now() - registration.updatedAt.getTime();
+      if (ageMs > 86400 * 1000) {
+        refreshRegistration(id);
+      }
+    } else {
       const data = await fetchBsmi(id);
       if (!data) {
         res.status(404).send("Not Found");
