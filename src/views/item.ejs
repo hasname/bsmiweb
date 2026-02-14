@@ -2,10 +2,31 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><%= registration.id %> — BSMI 檢驗標識查詢</title>
+<meta name="description" content="BSMI 檢驗標識 <%= registration.id %> — <%= registration.applicant %>（統編 <%= registration.taxId %>），共 <%= registration.certificates.length %> 張證書">
+<link rel="canonical" href="<%= canonicalUrl %>">
 <meta property="og:title" content="<%= registration.id %> — BSMI 檢驗標識查詢">
 <meta property="og:description" content="<%= registration.applicant %>（統編 <%= registration.taxId %>）— 共 <%= registration.certificates.length %> 張證書">
 <meta property="og:type" content="website">
+<meta property="og:url" content="<%= canonicalUrl %>">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="<%= registration.id %> — BSMI 檢驗標識查詢">
+<meta name="twitter:description" content="<%= registration.applicant %>（統編 <%= registration.taxId %>）— 共 <%= registration.certificates.length %> 張證書">
+<script type="application/ld+json">
+<%- JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": registration.applicant,
+  "taxID": registration.taxId,
+  "telephone": registration.phone,
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": registration.companyAddr
+  },
+  "url": canonicalUrl
+}) %>
+</script>
 <style>
 body { font-family: sans-serif; margin: 2em; }
 table { border-collapse: collapse; width: 100%; margin-top: 1em; }

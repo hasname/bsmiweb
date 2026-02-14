@@ -57,7 +57,8 @@ app.get("/bsmi/:id", async (req, res, next) => {
       });
     }
 
-    res.render("item", { registration });
+    const canonicalUrl = `${req.protocol}://${req.get("host")}/bsmi/${registration.id}`;
+    res.render("item", { registration, canonicalUrl });
   } catch (err) {
     next(err);
   }
