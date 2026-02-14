@@ -15,13 +15,29 @@
     "@prisma/adapter-better-sqlite3": "^7.4.0",
     "@prisma/client": "^7.4.0",
     "better-sqlite3": "^12.6.2",
+    "compression": "^1.8.1",
     "ejs": "^4.0.1",
     "express": "^5.2.1"
   },
   "jest": {
-    "extensionsToTreatAsEsm": [".ts"],
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
     "transform": {
-      "\\.ts$": ["@swc/jest", { "jsc": { "parser": { "syntax": "typescript" }, "target": "esnext" }, "module": { "type": "es6" } }]
+      "\\.ts$": [
+        "@swc/jest",
+        {
+          "jsc": {
+            "parser": {
+              "syntax": "typescript"
+            },
+            "target": "esnext"
+          },
+          "module": {
+            "type": "es6"
+          }
+        }
+      ]
     }
   },
   "devDependencies": {
