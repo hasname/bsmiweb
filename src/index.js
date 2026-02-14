@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import compression from "compression";
 import express from "express";
+import { minify } from "html-minifier-terser";
 
 import { fetchBsmi } from "./bsmi.js";
 import prisma from "./db.js";
@@ -16,6 +17,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "..", "public")));
+
+const minifyOptions = {
+  collapseWhitespace: true,
+  removeComments: true,
+  minifyCSS: true,
+};
+
+const originalRender = app.response.render;
+app.response.render = function (view, options, callback) {
+  originalRender.call(this, view, options, async (err, html) => {
+    if (err) {
+      if (callback) return callback(err);
+      return this.req.next(err);
+    }
+    try {
+      const minified = await minify(html, minifyOptions);
+      this.send(minified);
+    } catch {
+      this.send(html);
+    }
+  });
+};
 
 app.get("/", (req, res) => {
   res.render("index");
