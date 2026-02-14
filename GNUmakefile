@@ -1,4 +1,4 @@
-.PHONY: db-migrate db-push generate install lint run-engineering test
+.PHONY: db-migrate db-push generate install lint run-engineering run-engineering-cron test
 
 prisma/schema.dev.prisma: prisma/schema.prisma
 	sed -e 's/provider = "mysql"/provider = "sqlite"/' -e 's/  *@db\.[A-Za-z]*//g' $< > $@
@@ -24,6 +24,9 @@ lint: node_modules
 
 run-engineering: db-push
 	node --watch src/index.js
+
+run-engineering-cron: db-push
+	node --watch src/cron.js
 
 test: generate
 	npm test
