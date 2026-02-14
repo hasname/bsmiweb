@@ -23,5 +23,5 @@ jobs:
 
       - if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
-      - run: npm run lint
-      - run: npm test
+      - run: make lint
+      - run: make test
