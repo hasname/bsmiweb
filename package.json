@@ -7,18 +7,28 @@
   "scripts": {
     "start": "node src/index.js",
     "lint": "eslint .",
-    "test": "DATABASE_URL='file::memory:' NODE_OPTIONS='--experimental-vm-modules' jest"
+    "test": "DATABASE_URL='file::memory:' NODE_OPTIONS='--experimental-vm-modules --experimental-transform-types' jest"
   },
   "author": "Gea-Suan Lin <gslin@gslin.com>",
   "license": "MIT",
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.4.0",
     "@prisma/client": "^7.4.0",
+    "better-sqlite3": "^12.6.2",
     "ejs": "^4.0.1",
     "express": "^5.2.1"
+  },
+  "jest": {
+    "extensionsToTreatAsEsm": [".ts"],
+    "transform": {
+      "\\.ts$": ["@swc/jest", { "jsc": { "parser": { "syntax": "typescript" }, "target": "esnext" }, "module": { "type": "es6" } }]
+    }
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.2.0",
+    "@swc/core": "^1.15.11",
+    "@swc/jest": "^0.2.39",
     "dotenv": "^17.3.1",
     "eslint": "^10.0.0",
     "globals": "^17.3.0",
