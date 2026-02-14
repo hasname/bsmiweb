@@ -1,4 +1,7 @@
-.PHONY: lint run-engineering test
+.PHONY: install lint run-engineering test
+
+install:
+	npm install
 
 lint:
 	npm run lint
