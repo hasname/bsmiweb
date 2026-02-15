@@ -5,7 +5,10 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "npx pm2 start ecosystem.config.cjs",
+    "stop": "npx pm2 stop ecosystem.config.cjs",
+    "restart": "npx pm2 restart ecosystem.config.cjs",
+    "logs": "npx pm2 logs",
     "lint": "eslint .",
     "test": "DATABASE_URL='file::memory:' NODE_OPTIONS='--experimental-vm-modules --experimental-transform-types' jest"
   },
@@ -19,7 +22,8 @@
     "ejs": "^4.0.1",
     "express": "^5.2.1",
     "html-minifier-terser": "^7.2.0",
-    "node-schedule": "^2.1.1"
+    "node-schedule": "^2.1.1",
+    "pm2": "^6.0.14"
   },
   "jest": {
     "extensionsToTreatAsEsm": [
