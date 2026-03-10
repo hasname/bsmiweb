@@ -43,8 +43,9 @@ app.response.render = function (view, options, callback) {
 app.get("/", async (req, res, next) => {
   try {
     const q = req.query.q;
+    const canonicalUrl = `${req.protocol}://${req.get("host")}/`;
     if (!q) {
-      res.render("index", { q: "", registrations: [], certificates: [], authorizations: [] });
+      res.render("index", { q: "", registrations: [], certificates: [], authorizations: [], canonicalUrl });
       return;
     }
 
@@ -97,7 +98,7 @@ app.get("/", async (req, res, next) => {
       }).catch(() => []),
     ]);
 
-    res.render("index", { q, registrations, certificates, authorizations });
+    res.render("index", { q, registrations, certificates, authorizations, canonicalUrl });
   } catch (err) {
     next(err);
   }
@@ -203,8 +204,9 @@ app.get("/ban/:id", async (req, res, next) => {
       // Authorization table may not exist yet
     }
 
+    const canonicalUrl = `${req.protocol}://${req.get("host")}/ban/${taxId}`;
     res.set("Cache-Control", "public, max-age=3600");
-    res.render("ban", { taxId, registrations, authorizations });
+    res.render("ban", { taxId, registrations, authorizations, canonicalUrl });
   } catch (err) {
     next(err);
   }
