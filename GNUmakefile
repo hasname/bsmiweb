@@ -1,7 +1,12 @@
-.PHONY: db-migrate db-push generate install lint run-engineering run-engineering-cron test
+.PHONY: db-migrate db-push deploy generate install lint run-engineering run-engineering-cron test
 
 prisma/schema.dev.prisma: prisma/schema.prisma
 	sed -e 's/provider = "mysql"/provider = "sqlite"/' -e 's/  *@db\.[A-Za-z]*//g' $< > $@
+
+deploy:
+	make -C ../bsmiweb-credentials decrypt > .env.deploy.tmp
+	ansible-playbook -i ansible/inventory.ini ansible/deploy.yml -e dotenv_file=.env.deploy.tmp
+	rm -f .env.deploy.tmp
 
 db-migrate: node_modules
 	NODE_ENV=production npx prisma migrate dev
