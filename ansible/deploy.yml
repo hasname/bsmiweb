@@ -1,8 +1,9 @@
 ---
 - hosts: web
   vars:
-    deploy_path: /home/service/bsmiweb
-    systemd_user_dir: /home/service/.config/systemd/user
+    deploy_path: ~/bsmiweb
+    mise_node_bin: ~/.local/share/mise/shims
+    systemd_user_dir: ~/.config/systemd/user
   tasks:
     - name: Sync project files
       ansible.posix.synchronize:
@@ -25,6 +26,8 @@
       ansible.builtin.command:
         cmd: npm install --omit=dev
         chdir: "{{ deploy_path }}"
+      environment:
+        PATH: "{{ mise_node_bin }}:{{ ansible_env.PATH }}"
 
     - name: Run database migration
       ansible.builtin.command:
@@ -32,11 +35,14 @@
         chdir: "{{ deploy_path }}"
       environment:
         NODE_ENV: production
+        PATH: "{{ mise_node_bin }}:{{ ansible_env.PATH }}"
 
     - name: Generate Prisma client
       ansible.builtin.command:
         cmd: npx prisma generate
         chdir: "{{ deploy_path }}"
+      environment:
+        PATH: "{{ mise_node_bin }}:{{ ansible_env.PATH }}"
 
     - name: Create systemd user directory
       ansible.builtin.file:
