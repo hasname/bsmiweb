@@ -1,0 +1,15 @@
+[Unit]
+Description=bsmiweb cron job
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory={{ deploy_path }}
+Environment=NODE_ENV=production
+EnvironmentFile={{ deploy_path }}/.env
+ExecStart={{ mise_node_bin }}/node src/cron.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

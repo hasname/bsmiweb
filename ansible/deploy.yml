@@ -43,6 +43,7 @@
         cmd: npx prisma generate
         chdir: "{{ deploy_path }}"
       environment:
+        NODE_ENV: production
         PATH: "{{ mise_node_bin }}:{{ ansible_facts['env']['PATH'] }}"
 
     - name: Create systemd user directory
@@ -52,13 +53,13 @@
         mode: "0755"
 
     - name: Install systemd user service files
-      ansible.builtin.copy:
-        src: "{{ item }}"
-        dest: "{{ systemd_user_dir }}/{{ item | basename }}"
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ systemd_user_dir }}/{{ item.dest }}"
         mode: "0644"
       loop:
-        - "{{ playbook_dir }}/bsmiweb.service"
-        - "{{ playbook_dir }}/bsmiweb-cron.service"
+        - { src: "{{ playbook_dir }}/bsmiweb.service.j2", dest: "bsmiweb.service" }
+        - { src: "{{ playbook_dir }}/bsmiweb-cron.service.j2", dest: "bsmiweb-cron.service" }
 
     - name: Reload systemd user daemon
       ansible.builtin.systemd:
