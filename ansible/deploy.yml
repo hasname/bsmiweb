@@ -16,6 +16,7 @@
           - "--exclude=prisma/dev.db"
           - "--exclude=src/generated"
           - "--exclude=.env"
+          - "--exclude=ansible/lib"
 
     - name: Copy .env file
       ansible.builtin.copy:

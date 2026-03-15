@@ -3,7 +3,10 @@
 prisma/schema.dev.prisma: prisma/schema.prisma
 	sed -e 's/provider = "mysql"/provider = "sqlite"/' -e 's/  *@db\.[A-Za-z]*//g' $< > $@
 
-deploy:
+ansible/lib/ansible_mitogen:
+	pip install --target=ansible/lib mitogen
+
+deploy: ansible/lib/ansible_mitogen
 	$(MAKE) --no-print-directory -C ../bsmiweb-credentials decrypt > .env.deploy.tmp
 	ansible-playbook -i ansible/inventory.ini ansible/deploy.yml -e dotenv_file=.env.deploy.tmp
 	rm -f .env.deploy.tmp

@@ -1,5 +1,6 @@
 .env
 .env.deploy.tmp
+ansible/lib/
 node_modules/
 prisma/dev.db
 src/generated/
