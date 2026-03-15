@@ -31,9 +31,9 @@
       environment:
         PATH: "{{ mise_node_bin }}:{{ ansible_facts['env']['PATH'] }}"
 
-    - name: Run database migration
+    - name: Sync database schema
       ansible.builtin.command:
-        cmd: npx prisma migrate deploy
+        cmd: npx prisma db push
         chdir: "{{ deploy_path }}"
       environment:
         NODE_ENV: production
