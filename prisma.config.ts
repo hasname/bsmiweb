@@ -5,12 +5,16 @@ import { defineConfig } from "prisma/config";
 
 const isProduction = process.env["NODE_ENV"] === "production";
 
+const databaseUrl =
+  process.env["DATABASE_URL"] ||
+  `mysql://${process.env["MYSQL_USER"]}:${process.env["MYSQL_PASSWORD"]}@${process.env["MYSQL_HOST"]}:${process.env["MYSQL_PORT"]}/${process.env["MYSQL_DATABASE"]}`;
+
 export default defineConfig({
   schema: isProduction ? "prisma/schema.prisma" : "prisma/schema.dev.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: databaseUrl,
   },
 });
