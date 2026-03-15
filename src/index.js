@@ -42,10 +42,15 @@ app.response.render = function (view, options, callback) {
 
 app.get("/", async (req, res, next) => {
   try {
-    const q = req.query.q;
+    const q = req.query.q?.trim();
     const canonicalUrl = `${req.protocol}://${req.get("host")}/`;
     if (!q) {
       res.render("index", { q: "", registrations: [], certificates: [], authorizations: [], canonicalUrl });
+      return;
+    }
+
+    if (VALID_ID_RE.test(q)) {
+      res.redirect(`/bsmi/${q.toUpperCase()}`);
       return;
     }
 
