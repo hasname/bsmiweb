@@ -12,13 +12,14 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.4.0",
+    "@prisma/adapter-mariadb": "^7.5.0",
     "@prisma/client": "^7.4.0",
     "better-sqlite3": "^12.6.2",
     "compression": "^1.8.1",
+    "dotenv": "^17.3.1",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
     "html-minifier-terser": "^7.2.0",
-    "dotenv": "^17.3.1",
     "node-schedule": "^2.1.1"
   },
   "jest": {
