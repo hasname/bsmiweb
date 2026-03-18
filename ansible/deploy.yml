@@ -31,20 +31,23 @@
       environment:
         PATH: "{{ mise_node_bin }}:{{ ansible_facts['env']['PATH'] }}"
 
-    - name: Run one-time snake_case migration
+    - name: Mark existing migrations as applied
       ansible.builtin.command:
-        cmd: npx prisma db execute --file scripts/migrate-snake-case.sql
+        cmd: "npx prisma migrate resolve --applied {{ item }}"
         chdir: "{{ deploy_path }}"
       environment:
         NODE_ENV: production
         PATH: "{{ mise_node_bin }}:{{ ansible_facts['env']['PATH'] }}"
-      register: migration_result
+      loop:
+        - 0001_baseline
+        - 0002_rename_to_snake_case
+      register: resolve_result
       failed_when: false
-      changed_when: migration_result.rc == 0
+      changed_when: resolve_result.rc == 0
 
-    - name: Sync database schema
+    - name: Run database migrations
       ansible.builtin.command:
-        cmd: npx prisma db push
+        cmd: npx prisma migrate deploy
         chdir: "{{ deploy_path }}"
       environment:
         NODE_ENV: production
