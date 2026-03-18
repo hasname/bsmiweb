@@ -40,57 +40,57 @@ const sampleData = {
 };
 
 const createTableSQL = `
-  CREATE TABLE IF NOT EXISTS Registration (
+  CREATE TABLE IF NOT EXISTS registration (
     id TEXT PRIMARY KEY,
-    taxId TEXT NOT NULL,
+    tax_id TEXT NOT NULL,
     applicant TEXT NOT NULL,
-    contactAddr TEXT NOT NULL,
-    companyAddr TEXT NOT NULL,
+    contact_addr TEXT NOT NULL,
+    company_addr TEXT NOT NULL,
     phone TEXT NOT NULL,
     note TEXT NOT NULL,
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`;
 
 const createCertTableSQL = `
-  CREATE TABLE IF NOT EXISTS Certificate (
+  CREATE TABLE IF NOT EXISTS certificate (
     id TEXT PRIMARY KEY,
-    registrationId TEXT NOT NULL,
-    validDate TEXT NOT NULL,
+    registration_id TEXT NOT NULL,
+    valid_date TEXT NOT NULL,
     status TEXT NOT NULL,
-    productName TEXT NOT NULL,
-    soldAs TEXT NOT NULL,
-    mainModel TEXT NOT NULL,
-    seriesModels TEXT NOT NULL,
+    product_name TEXT NOT NULL,
+    sold_as TEXT NOT NULL,
+    main_model TEXT NOT NULL,
+    series_models TEXT NOT NULL,
     issuer TEXT NOT NULL,
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (registrationId) REFERENCES Registration(id)
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (registration_id) REFERENCES registration(id)
   )`;
 
 const createAuthTableSQL = `
-  CREATE TABLE IF NOT EXISTS Authorization (
+  CREATE TABLE IF NOT EXISTS authorization (
     id TEXT PRIMARY KEY,
-    certificateId TEXT NOT NULL,
-    authorizerName TEXT NOT NULL,
-    mainModel TEXT NOT NULL,
-    authorizeeTaxId TEXT NOT NULL,
-    authorizeeName TEXT NOT NULL,
-    authorizeeAddr TEXT NOT NULL,
-    authorizeePhone TEXT NOT NULL,
-    validDate TEXT NOT NULL,
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    certificate_id TEXT NOT NULL,
+    authorizer_name TEXT NOT NULL,
+    main_model TEXT NOT NULL,
+    authorizee_tax_id TEXT NOT NULL,
+    authorizee_name TEXT NOT NULL,
+    authorizee_addr TEXT NOT NULL,
+    authorizee_phone TEXT NOT NULL,
+    valid_date TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`;
 
 const createAuthCertIdIndexSQL =
-  "CREATE INDEX IF NOT EXISTS Authorization_certificateId_idx ON Authorization(certificateId)";
+  "CREATE INDEX IF NOT EXISTS authorization_certificate_id_idx ON authorization(certificate_id)";
 
 const createAuthTaxIdIndexSQL =
-  "CREATE INDEX IF NOT EXISTS Authorization_authorizeeTaxId_idx ON Authorization(authorizeeTaxId)";
+  "CREATE INDEX IF NOT EXISTS authorization_authorizee_tax_id_idx ON authorization(authorizee_tax_id)";
 
 const createIndexSQL =
-  "CREATE INDEX IF NOT EXISTS Certificate_registrationId_idx ON Certificate(registrationId)";
+  "CREATE INDEX IF NOT EXISTS certificate_registration_id_idx ON certificate(registration_id)";
 
 beforeAll(async () => {
   await prisma.$executeRawUnsafe(createTableSQL);

@@ -15,47 +15,51 @@ datasource db {
 
 model Registration {
   id           String        @id // e.g. "R45879"
-  taxId        String // 統編
+  taxId        String        @map("tax_id") // 統編
   applicant    String // 申請人
-  contactAddr  String // 聯絡地址
-  companyAddr  String // 公司地址
+  contactAddr  String        @map("contact_addr") // 聯絡地址
+  companyAddr  String        @map("company_addr") // 公司地址
   phone        String // 電話
   note         String // 廠商資料備註
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
   certificates Certificate[]
+
+  @@map("registration")
 }
 
 model Certificate {
   id             String       @id // 證書編號, e.g. "CI450068790054"
-  registrationId String
-  validDate      String // 有效期間 (民國日期, e.g. "1130202")
+  registrationId String       @map("registration_id")
+  validDate      String       @map("valid_date") // 有效期間 (民國日期, e.g. "1130202")
   status         String // 證書狀態 (認可/期限到期失效/註銷)
-  productName    String // 產品中文名稱
-  soldAs         String // 以他人名義銷售
-  mainModel      String // 主型式
-  seriesModels   String // 系列型號 (newline-separated)
+  productName    String       @map("product_name") // 產品中文名稱
+  soldAs         String       @map("sold_as") // 以他人名義銷售
+  mainModel      String       @map("main_model") // 主型式
+  seriesModels   String       @map("series_models") // 系列型號 (newline-separated)
   issuer         String // 發證單位
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
   registration   Registration @relation(fields: [registrationId], references: [id])
 
   @@index([registrationId])
+  @@map("certificate")
 }
 
 model Authorization {
   id              String   @id // 授權證號, e.g. "CI311072080028"
-  certificateId   String // 原始證書編號
-  authorizerName  String // 授權人名稱
-  mainModel       String // 主型式
-  authorizeeTaxId String // 被授權人統編
-  authorizeeName  String // 被授權人名稱
-  authorizeeAddr  String // 被授權人地址
-  authorizeePhone String // 被授權人電話
-  validDate       String // 授權有效時間, e.g. "2005/07/18"
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  certificateId   String   @map("certificate_id") // 原始證書編號
+  authorizerName  String   @map("authorizer_name") // 授權人名稱
+  mainModel       String   @map("main_model") // 主型式
+  authorizeeTaxId String   @map("authorizee_tax_id") // 被授權人統編
+  authorizeeName  String   @map("authorizee_name") // 被授權人名稱
+  authorizeeAddr  String   @map("authorizee_addr") // 被授權人地址
+  authorizeePhone String   @map("authorizee_phone") // 被授權人電話
+  validDate       String   @map("valid_date") // 授權有效時間, e.g. "2005/07/18"
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@index([certificateId])
   @@index([authorizeeTaxId])
+  @@map("authorization")
 }

@@ -97,9 +97,9 @@ export async function importCertificates(db = prisma) {
 
   const upsertSql = prod
     ? (values) =>
-        `INSERT INTO Certificate (id, registrationId, validDate, status, productName, soldAs, mainModel, seriesModels, issuer, createdAt, updatedAt) VALUES ${values} ON DUPLICATE KEY UPDATE validDate=VALUES(validDate), status=VALUES(status), productName=VALUES(productName), mainModel=VALUES(mainModel), updatedAt=VALUES(updatedAt)`
+        `INSERT INTO certificate (id, registration_id, valid_date, status, product_name, sold_as, main_model, series_models, issuer, created_at, updated_at) VALUES ${values} ON DUPLICATE KEY UPDATE valid_date=VALUES(valid_date), status=VALUES(status), product_name=VALUES(product_name), main_model=VALUES(main_model), updated_at=VALUES(updated_at)`
     : (values) =>
-        `INSERT INTO Certificate (id, registrationId, validDate, status, productName, soldAs, mainModel, seriesModels, issuer, createdAt, updatedAt) VALUES ${values} ON CONFLICT(id) DO UPDATE SET validDate=excluded.validDate, status=excluded.status, productName=excluded.productName, mainModel=excluded.mainModel, updatedAt=excluded.updatedAt`;
+        `INSERT INTO certificate (id, registration_id, valid_date, status, product_name, sold_as, main_model, series_models, issuer, created_at, updated_at) VALUES ${values} ON CONFLICT(id) DO UPDATE SET valid_date=excluded.valid_date, status=excluded.status, product_name=excluded.product_name, main_model=excluded.main_model, updated_at=excluded.updated_at`;
 
   // Disable FK checks for bulk import
   if (prod) {
