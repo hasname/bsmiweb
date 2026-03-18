@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import * as Sentry from "@sentry/node";
 import compression from "compression";
 import express from "express";
 import helmet from "helmet";
@@ -18,12 +19,19 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        "script-src": ["'self'", "'unsafe-inline'"],
+        "script-src": ["'self'", "'unsafe-inline'", "https://browser.sentry-cdn.com"],
+        "connect-src": ["'self'", "https://*.ingest.sentry.io"],
       },
     },
   }),
 );
 app.use(compression());
+
+const sentryDsnFrontend = process.env.SENTRY_DSN_FRONTEND || "";
+app.use((req, res, next) => {
+  res.locals.sentryDsn = sentryDsnFrontend;
+  next();
+});
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.set("view engine", "ejs");
@@ -263,6 +271,8 @@ app.get("/sitemap.xml", async (req, res, next) => {
 app.use((req, res) => {
   res.status(404).send("Not Found");
 });
+
+Sentry.setupExpressErrorHandler(app);
 
 // Error handler
 // eslint-disable-next-line no-unused-vars

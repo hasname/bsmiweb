@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 WorkingDirectory=/home/service/bsmiweb
 EnvironmentFile=/home/service/bsmiweb/.env
-ExecStart=/home/service/.local/share/mise/shims/node src/cron.js
+ExecStart=/home/service/.local/share/mise/shims/node --import ./src/instrument-cron.js src/cron.js
 Restart=always
 RestartSec=5
 

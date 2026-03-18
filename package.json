@@ -14,6 +14,7 @@
     "@prisma/adapter-better-sqlite3": "^7.4.0",
     "@prisma/adapter-mariadb": "^7.5.0",
     "@prisma/client": "^7.4.0",
+    "@sentry/node": "^10.44.0",
     "better-sqlite3": "^12.6.2",
     "compression": "^1.8.1",
     "dotenv": "^17.3.1",
