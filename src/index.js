@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import compression from "compression";
 import express from "express";
+import helmet from "helmet";
 import { minify } from "html-minifier-terser";
 
 import { fetchBsmi } from "./bsmi.js";
@@ -11,6 +12,17 @@ import prisma from "./db.js";
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.set("trust proxy", "loopback");
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "script-src": ["'self'", "'unsafe-inline'"],
+      },
+    },
+  }),
+);
 app.use(compression());
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
