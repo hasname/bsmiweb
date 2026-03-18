@@ -9,12 +9,11 @@ function extractTag(row, tag) {
   return m ? m[1].trim() : "";
 }
 
-async function main() {
+export async function importAuthorizations(db = prisma) {
   console.log("Downloading authorization XML...");
 
   const res = await fetch(XML_URL, {
     headers: { "User-Agent": "bsmiweb/1.0" },
-    // Government site uses self-signed cert
   });
 
   if (!res.ok) {
@@ -44,7 +43,7 @@ async function main() {
   console.log(`Importing ${valid.length} valid records...`);
 
   // Batch import: delete all then create in batches
-  await prisma.$transaction(async (tx) => {
+  await db.$transaction(async (tx) => {
     await tx.authorization.deleteMany();
 
     const BATCH_SIZE = 1000;
@@ -58,9 +57,12 @@ async function main() {
   console.log("Done.");
 }
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+// Run as standalone script
+if (import.meta.url === `file://${process.argv[1]}`) {
+  importAuthorizations()
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    })
+    .finally(() => prisma.$disconnect());
+}

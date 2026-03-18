@@ -122,6 +122,7 @@ app.get("/", async (req, res, next) => {
 });
 
 const VALID_ID_RE = /^[RTDQMrtdqm][A-Za-z0-9]{5}$/;
+const VALID_TAX_ID_RE = /^\d{8}$/;
 
 async function upsertRegistration(data) {
   const { certificates, ...vendor } = data;
@@ -200,6 +201,11 @@ app.get("/bsmi/:id", async (req, res, next) => {
 app.get("/ban/:id", async (req, res, next) => {
   try {
     const taxId = req.params.id;
+
+    if (!VALID_TAX_ID_RE.test(taxId)) {
+      res.status(404).send("Not Found");
+      return;
+    }
 
     const registrations = await prisma.registration.findMany({
       where: { taxId },
