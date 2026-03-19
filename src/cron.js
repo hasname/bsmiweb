@@ -5,6 +5,7 @@ import schedule from "node-schedule";
 
 import prisma from "./db.js";
 import { fetchBsmi, syncRecentChanges } from "./bsmi.js";
+import { syncFromMomo } from "./momo.js";
 import { syncFromPchome } from "./pchome.js";
 import { importCertificates } from "../scripts/import-certificates.js";
 import { importAuthorizations } from "../scripts/import-authorizations.js";
@@ -47,7 +48,13 @@ schedule.scheduleJob("0 5 * * *", () => {
   runJob("syncFromPchome", () => syncFromPchome(prisma, fetchBsmi));
 });
 
+// Daily at 06:00 — scan momo for new BSMI registrations
+schedule.scheduleJob("0 6 * * *", () => {
+  runJob("syncFromMomo", () => syncFromMomo(prisma, fetchBsmi));
+});
+
 console.log("[cron] Scheduled jobs:");
 console.log("  - importCertificates+Authorizations: daily at 03:00");
 console.log("  - syncRecentChanges:                 daily at 04:00");
 console.log("  - syncFromPchome:                    daily at 05:00");
+console.log("  - syncFromMomo:                      daily at 06:00");
