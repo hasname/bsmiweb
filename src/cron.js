@@ -4,7 +4,8 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 import schedule from "node-schedule";
 
 import prisma from "./db.js";
-import { syncRecentChanges } from "./bsmi.js";
+import { fetchBsmi, syncRecentChanges } from "./bsmi.js";
+import { syncFromPchome } from "./pchome.js";
 import { importCertificates } from "../scripts/import-certificates.js";
 import { importAuthorizations } from "../scripts/import-authorizations.js";
 
@@ -41,6 +42,12 @@ schedule.scheduleJob("0 4 * * *", () => {
   runJob("syncRecentChanges", () => syncRecentChanges(prisma, 7));
 });
 
+// Daily at 05:00 — scan PChome for new BSMI registrations
+schedule.scheduleJob("0 5 * * *", () => {
+  runJob("syncFromPchome", () => syncFromPchome(prisma, fetchBsmi));
+});
+
 console.log("[cron] Scheduled jobs:");
 console.log("  - importCertificates+Authorizations: daily at 03:00");
 console.log("  - syncRecentChanges:                 daily at 04:00");
+console.log("  - syncFromPchome:                    daily at 05:00");
