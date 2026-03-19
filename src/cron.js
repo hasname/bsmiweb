@@ -32,43 +32,27 @@ async function runJob(name, fn) {
   }
 }
 
-// Daily at 03:00 — import certificates and authorizations XML from open data
-schedule.scheduleJob("0 3 * * *", () => {
-  runJob("importCertificates+Authorizations", async () => {
-    await importCertificates(prisma);
-    await importAuthorizations(prisma);
-  });
-});
+const jobs = [
+  {
+    cron: "0 3 * * *",
+    name: "importCertificates+Authorizations",
+    fn: async () => {
+      await importCertificates(prisma);
+      await importAuthorizations(prisma);
+    },
+  },
+  { cron: "0 4 * * *", name: "syncRecentChanges", fn: () => syncRecentChanges(prisma, 7) },
+  { cron: "0 5 * * *", name: "syncFromPchome", fn: () => syncFromPchome(prisma, fetchBsmi) },
+  { cron: "0 6 * * *", name: "syncFromMomo", fn: () => syncFromMomo(prisma, fetchBsmi) },
+  { cron: "0 7 * * *", name: "syncFromBooks", fn: () => syncFromBooks(prisma, fetchBsmi) },
+  { cron: "0 8 * * *", name: "syncFromFriday", fn: () => syncFromFriday(prisma, fetchBsmi) },
+];
 
-// Daily at 04:00 — sync recently changed registrations (past 7 days)
-schedule.scheduleJob("0 4 * * *", () => {
-  runJob("syncRecentChanges", () => syncRecentChanges(prisma, 7));
-});
-
-// Daily at 05:00 — scan PChome for new BSMI registrations
-schedule.scheduleJob("0 5 * * *", () => {
-  runJob("syncFromPchome", () => syncFromPchome(prisma, fetchBsmi));
-});
-
-// Daily at 06:00 — scan momo for new BSMI registrations
-schedule.scheduleJob("0 6 * * *", () => {
-  runJob("syncFromMomo", () => syncFromMomo(prisma, fetchBsmi));
-});
-
-// Daily at 07:00 — scan books.com.tw for new BSMI registrations
-schedule.scheduleJob("0 7 * * *", () => {
-  runJob("syncFromBooks", () => syncFromBooks(prisma, fetchBsmi));
-});
-
-// Daily at 08:00 — scan friDay shopping for new BSMI registrations
-schedule.scheduleJob("0 8 * * *", () => {
-  runJob("syncFromFriday", () => syncFromFriday(prisma, fetchBsmi));
-});
+for (const job of jobs) {
+  schedule.scheduleJob(job.cron, () => runJob(job.name, job.fn));
+}
 
 console.log("[cron] Scheduled jobs:");
-console.log("  - importCertificates+Authorizations: daily at 03:00");
-console.log("  - syncRecentChanges:                 daily at 04:00");
-console.log("  - syncFromPchome:                    daily at 05:00");
-console.log("  - syncFromMomo:                      daily at 06:00");
-console.log("  - syncFromBooks:                     daily at 07:00");
-console.log("  - syncFromFriday:                    daily at 08:00");
+for (const job of jobs) {
+  console.log(`  - ${job.name}: ${job.cron}`);
+}

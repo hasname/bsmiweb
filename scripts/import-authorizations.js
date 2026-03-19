@@ -1,13 +1,8 @@
 import prisma from "../src/db.js";
+import { extractTag } from "../src/utils.js";
 
 const XML_URL =
   "https://data.bsmi.gov.tw/opendata/download/313000000G-000129-001.action";
-
-function extractTag(row, tag) {
-  const re = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`);
-  const m = row.match(re);
-  return m ? m[1].trim() : "";
-}
 
 export async function importAuthorizations(db = prisma) {
   console.log("Downloading authorization XML...");

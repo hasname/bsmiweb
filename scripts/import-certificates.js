@@ -2,6 +2,7 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 import prisma from "../src/db.js";
+import { extractTag } from "../src/utils.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -15,12 +16,6 @@ const DATASETS = [
     url: "https://data.bsmi.gov.tw/opendata/download/313000000G-000092-001.action",
   },
 ];
-
-function extractTag(row, tag) {
-  const re = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`);
-  const m = row.match(re);
-  return m ? m[1].trim() : "";
-}
 
 // Convert western date "2024/06/10" to ROC date "1130610"
 function toRocDate(western) {

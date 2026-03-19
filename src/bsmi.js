@@ -1,3 +1,5 @@
+import { sleep, upsertRegistration } from "./utils.js";
+
 const BSMI_URL = "https://civil.bsmi.gov.tw/bsmi_pqn/pqn/uqi5102f.do";
 const CERT_URL = "https://civil.bsmi.gov.tw/bsmi_pqn/pqn/uqi2102f.do";
 
@@ -92,8 +94,6 @@ function parseCertificates(html) {
 
   return certs;
 }
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Convert a Date to ROC date string "YYY/MM/DD"
 function toRocDate(date) {
@@ -273,15 +273,7 @@ export async function syncRecentChanges(prisma, days = 7) {
         // Fetch full registration data via uqi5102f.do and upsert
         const data = await fetchBsmi(reg.id);
         if (data) {
-          const { certificates, ...vendor } = data;
-          await prisma.$transaction(async (tx) => {
-            await tx.certificate.deleteMany({ where: { registrationId: vendor.id } });
-            await tx.registration.upsert({
-              where: { id: vendor.id },
-              create: { ...vendor, certificates: { create: certificates } },
-              update: { ...vendor, certificates: { create: certificates } },
-            });
-          });
+          await upsertRegistration(prisma, data);
           refreshed.push(reg.id);
           console.log(`Refreshed ${reg.id} (${results.length} cert changes)`);
         }

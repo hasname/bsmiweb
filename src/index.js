@@ -9,6 +9,7 @@ import { minify } from "html-minifier-terser";
 
 import { fetchBsmi } from "./bsmi.js";
 import prisma from "./db.js";
+import { upsertRegistration } from "./utils.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -132,24 +133,11 @@ app.get("/", async (req, res, next) => {
 const VALID_ID_RE = /^[RTDQMrtdqm][A-Za-z0-9]{5}$/;
 const VALID_TAX_ID_RE = /^\d{8}$/;
 
-async function upsertRegistration(data) {
-  const { certificates, ...vendor } = data;
-  return await prisma.$transaction(async (tx) => {
-    await tx.certificate.deleteMany({ where: { registrationId: vendor.id } });
-    return await tx.registration.upsert({
-      where: { id: vendor.id },
-      create: { ...vendor, certificates: { create: certificates } },
-      update: { ...vendor, certificates: { create: certificates } },
-      include: { certificates: true },
-    });
-  });
-}
-
 async function refreshRegistration(id) {
   try {
     const data = await fetchBsmi(id);
     if (!data) return;
-    await upsertRegistration(data);
+    await upsertRegistration(prisma, data);
   } catch (err) {
     console.error(`Background refresh failed for ${id}:`, err.message);
   }
@@ -182,7 +170,7 @@ app.get("/bsmi/:id", async (req, res, next) => {
         return;
       }
 
-      registration = await upsertRegistration(data);
+      registration = await upsertRegistration(prisma, data);
     }
 
     let authorizations = [];

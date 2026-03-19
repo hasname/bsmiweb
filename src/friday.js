@@ -1,15 +1,8 @@
 import { JSON_HEADERS } from "./http.js";
+import { BSMI_ID_RE, sleep, createSyncFromEc } from "./utils.js";
 
 const SEARCH_URL = "https://aisearch-web.shopping.friday.tw/aisearch";
 
-const BSMI_ID_RE = /[RTDQM]\d{5}/gi;
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
- * Search friDay shopping via aisearch API.
- * Keyword is base64 encoded as required by the API.
- */
 async function searchFriday(page = 1, size = 40) {
   const keyword = Buffer.from("bsmi").toString("base64");
 
@@ -47,17 +40,6 @@ async function searchFriday(page = 1, size = 40) {
   };
 }
 
-/**
- * Scan friDay search results for BSMI IDs.
- *
- * Note: friDay product detail pages require JS execution and are not
- * directly accessible. We extract BSMI IDs from product names in
- * search results only.
- *
- * @param {object} options
- * @param {number} [options.maxPages=5] - Maximum search pages to scan
- * @returns {Promise<string[]>} Unique BSMI registration IDs
- */
 export async function scanFriday({ maxPages = 5 } = {}) {
   const allIds = new Set();
   const pageSize = 40;
@@ -84,55 +66,4 @@ export async function scanFriday({ maxPages = 5 } = {}) {
   return [...allIds];
 }
 
-/**
- * Scan friDay and upsert any new BSMI registrations found.
- *
- * @param {import('./db.js').default} prisma - Prisma client
- * @param {import('./bsmi.js').fetchBsmi} fetchBsmi - BSMI fetch function
- * @param {object} [options] - Options passed to scanFriday
- * @returns {Promise<string[]>} IDs that were newly imported
- */
-export async function syncFromFriday(prisma, fetchBsmi, options) {
-  const markIds = await scanFriday(options);
-  const imported = [];
-
-  for (const markId of markIds) {
-    const existing = await prisma.registration.findUnique({
-      where: { id: markId },
-    });
-
-    if (existing) continue;
-
-    try {
-      const data = await fetchBsmi(markId);
-      if (!data) {
-        console.log(`[friday] ${markId}: not found on BSMI`);
-        continue;
-      }
-
-      const { certificates, ...vendor } = data;
-      await prisma.$transaction(async (tx) => {
-        await tx.certificate.deleteMany({
-          where: { registrationId: vendor.id },
-        });
-        await tx.registration.upsert({
-          where: { id: vendor.id },
-          create: { ...vendor, certificates: { create: certificates } },
-          update: { ...vendor, certificates: { create: certificates } },
-        });
-      });
-
-      imported.push(markId);
-      console.log(
-        `[friday] ${markId}: imported (${certificates.length} certs)`,
-      );
-    } catch (err) {
-      console.error(`[friday] ${markId}: failed -`, err.message);
-    }
-
-    await sleep(2000);
-  }
-
-  console.log(`[friday] Imported ${imported.length} new registrations`);
-  return imported;
-}
+export const syncFromFriday = createSyncFromEc("friday", scanFriday);
