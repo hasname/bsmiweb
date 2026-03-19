@@ -25,6 +25,30 @@ button { padding: 0.5em 1em; font-size: 1em; }
   <button type="submit">搜尋</button>
 </form>
 
+<% if (!q && recent.length > 0) { %>
+<h2>最近更新</h2>
+<table>
+<thead>
+<tr>
+  <th>標識號碼</th>
+  <th>統編</th>
+  <th>申請人</th>
+  <th>電話</th>
+</tr>
+</thead>
+<tbody>
+<% for (const reg of recent) { %>
+<tr>
+  <td><a href="/bsmi/<%= reg.id %>"><%= reg.id %></a></td>
+  <td><a href="/ban/<%= reg.taxId %>"><%= reg.taxId %></a></td>
+  <td><%= reg.applicant %></td>
+  <td><%= reg.phone %></td>
+</tr>
+<% } %>
+</tbody>
+</table>
+<% } %>
+
 <% if (q) { %>
   <% if (registrations.length === 0 && certificates.length === 0 && authorizations.length === 0) { %>
     <p>無搜尋結果。</p>

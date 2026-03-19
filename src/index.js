@@ -66,7 +66,11 @@ app.get("/", async (req, res, next) => {
     const q = req.query.q?.trim();
     const canonicalUrl = `${req.protocol}://${req.get("host")}/`;
     if (!q) {
-      res.render("index", { q: "", registrations: [], certificates: [], authorizations: [], canonicalUrl });
+      const recent = await prisma.registration.findMany({
+        orderBy: { updatedAt: "desc" },
+        take: 20,
+      });
+      res.render("index", { q: "", registrations: [], certificates: [], authorizations: [], recent, canonicalUrl });
       return;
     }
 
@@ -124,7 +128,7 @@ app.get("/", async (req, res, next) => {
       }).catch(() => []),
     ]);
 
-    res.render("index", { q, registrations, certificates, authorizations, canonicalUrl });
+    res.render("index", { q, registrations, certificates, authorizations, recent: [], canonicalUrl });
   } catch (err) {
     next(err);
   }
