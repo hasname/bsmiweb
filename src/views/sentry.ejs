@@ -1,5 +1,5 @@
 <% if (sentryDsn) { %>
-<script src="https://browser.sentry-cdn.com/10.44.0/bundle.min.js" crossorigin="anonymous"></script>
+<script src="/sentry.min.js"></script>
 <script>
 Sentry.init({ dsn: "<%= sentryDsn %>" });
 </script>

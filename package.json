@@ -5,6 +5,7 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
+    "build": "esbuild src/sentry-browser.js --bundle --minify --format=iife --global-name=Sentry --outfile=public/sentry.min.js",
     "lint": "eslint .",
     "test": "DATABASE_URL='file::memory:' NODE_OPTIONS='--experimental-vm-modules --experimental-transform-types' jest"
   },
@@ -47,9 +48,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@sentry/browser": "^10.44.0",
     "@jest/globals": "^30.2.0",
     "@swc/core": "^1.15.11",
     "@swc/jest": "^0.2.39",
+    "esbuild": "^0.27.4",
     "eslint": "^10.0.0",
     "globals": "^17.3.0",
     "jest": "^30.2.0",

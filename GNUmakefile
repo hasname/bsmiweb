@@ -6,7 +6,8 @@ prisma/schema.dev.prisma: prisma/schema.prisma
 ansible/lib/ansible_mitogen:
 	pip install --target=ansible/lib mitogen
 
-deploy: ansible/lib/ansible_mitogen
+deploy: node_modules ansible/lib/ansible_mitogen
+	npm run build
 	$(MAKE) --no-print-directory -C ../bsmiweb-credentials decrypt > .env.deploy.tmp
 	ansible-playbook -i ansible/inventory.ini ansible/deploy.yml -e dotenv_file=.env.deploy.tmp
 	rm -f .env.deploy.tmp

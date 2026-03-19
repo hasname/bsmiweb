@@ -19,7 +19,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        "script-src": ["'self'", "'unsafe-inline'", "https://browser.sentry-cdn.com"],
+        "script-src": ["'self'", "'unsafe-inline'"],
         "connect-src": ["'self'", "https://*.ingest.sentry.io"],
       },
     },
