@@ -1,3 +1,5 @@
+import { BROWSER_HEADERS, JSON_HEADERS } from "./http.js";
+
 const SEARCH_URL = "https://ecshweb.pchome.com.tw/search/v4.3/all/results";
 const PRODUCT_URL = "https://24h.pchome.com.tw/prod/";
 
@@ -15,7 +17,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function searchPchome(query, page = 1) {
   const url = `${SEARCH_URL}?q=${encodeURIComponent(query)}&page=${page}&sort=new/dc`;
   const res = await fetch(url, {
-    headers: { "User-Agent": "bsmiweb/1.0" },
+    headers: { ...JSON_HEADERS, Referer: "https://24h.pchome.com.tw/" },
   });
 
   if (!res.ok) {
@@ -43,7 +45,7 @@ function extractBsmiIds(text) {
  */
 async function extractBsmiFromProductPage(productId) {
   const res = await fetch(`${PRODUCT_URL}${productId}`, {
-    headers: { "User-Agent": "bsmiweb/1.0" },
+    headers: { ...BROWSER_HEADERS, Referer: "https://24h.pchome.com.tw/search/?q=bsmi" },
   });
 
   if (!res.ok) return [];

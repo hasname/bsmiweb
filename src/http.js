@@ -1,0 +1,12 @@
+export const BROWSER_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+};
+
+export const JSON_HEADERS = {
+  "User-Agent": BROWSER_HEADERS["User-Agent"],
+  Accept: "application/json",
+  "Accept-Language": BROWSER_HEADERS["Accept-Language"],
+};

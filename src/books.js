@@ -1,3 +1,5 @@
+import { BROWSER_HEADERS } from "./http.js";
+
 const SEARCH_URL =
   "https://search.books.com.tw/search/query/cat/all/sort/5/v/1/spell/3/key/bsmi";
 
@@ -12,7 +14,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function searchBooks(page = 1) {
   const url = `${SEARCH_URL}/page/${page}`;
   const res = await fetch(url, {
-    headers: { "User-Agent": "bsmiweb/1.0" },
+    headers: { ...BROWSER_HEADERS, Referer: "https://www.books.com.tw/" },
   });
 
   if (!res.ok) {

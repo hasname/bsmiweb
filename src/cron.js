@@ -6,6 +6,7 @@ import schedule from "node-schedule";
 import prisma from "./db.js";
 import { fetchBsmi, syncRecentChanges } from "./bsmi.js";
 import { syncFromBooks } from "./books.js";
+import { syncFromFriday } from "./friday.js";
 import { syncFromMomo } from "./momo.js";
 import { syncFromPchome } from "./pchome.js";
 import { importCertificates } from "../scripts/import-certificates.js";
@@ -59,9 +60,15 @@ schedule.scheduleJob("0 7 * * *", () => {
   runJob("syncFromBooks", () => syncFromBooks(prisma, fetchBsmi));
 });
 
+// Daily at 08:00 — scan friDay shopping for new BSMI registrations
+schedule.scheduleJob("0 8 * * *", () => {
+  runJob("syncFromFriday", () => syncFromFriday(prisma, fetchBsmi));
+});
+
 console.log("[cron] Scheduled jobs:");
 console.log("  - importCertificates+Authorizations: daily at 03:00");
 console.log("  - syncRecentChanges:                 daily at 04:00");
 console.log("  - syncFromPchome:                    daily at 05:00");
 console.log("  - syncFromMomo:                      daily at 06:00");
 console.log("  - syncFromBooks:                     daily at 07:00");
+console.log("  - syncFromFriday:                    daily at 08:00");

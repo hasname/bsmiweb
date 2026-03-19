@@ -1,3 +1,5 @@
+import { BROWSER_HEADERS } from "./http.js";
+
 const SEARCH_URL = "https://www.momoshop.com.tw/search/bsmi";
 const PRODUCT_URL = "https://www.momoshop.com.tw/goods/GoodsDetail.jsp";
 
@@ -13,7 +15,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function searchMomo(page = 1) {
   const url = `${SEARCH_URL}?_isFuzzy=0&searchType=5&curPage=${page}`;
   const res = await fetch(url, {
-    headers: { "User-Agent": "bsmiweb/1.0" },
+    headers: { ...BROWSER_HEADERS, Referer: "https://www.momoshop.com.tw/" },
   });
 
   if (!res.ok) {
@@ -97,7 +99,7 @@ function extractBsmiIds(text) {
  */
 async function extractBsmiFromProductPage(goodsCode) {
   const res = await fetch(`${PRODUCT_URL}?i_code=${goodsCode}`, {
-    headers: { "User-Agent": "bsmiweb/1.0" },
+    headers: { ...BROWSER_HEADERS, Referer: "https://www.momoshop.com.tw/search/bsmi" },
   });
 
   if (!res.ok) return [];
