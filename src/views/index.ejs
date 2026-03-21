@@ -19,6 +19,7 @@ button { padding: 0.5em 1em; font-size: 1em; }
 <body>
 <%- include('header') %>
 <h1>BSMI 檢驗標識查詢</h1>
+<p>目前站上共有 <%= counts.registrations %> 筆檢驗標識、<%= counts.certificates %> 張證書、<%= counts.authorizations %> 筆授權資料。</p>
 
 <form method="get" action="/">
   <input type="text" name="q" value="<%= q %>" placeholder="輸入關鍵字搜尋">

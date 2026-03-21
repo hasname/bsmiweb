@@ -78,6 +78,24 @@ describe("GET /", () => {
     expect(res.text).toContain("搜尋");
   });
 
+  it("should show current data counts on the homepage", async () => {
+    await prisma.registration.create({
+      data: {
+        id: "R45879",
+        taxId: "82781974",
+        applicant: "樂澤國際有限公司",
+        contactAddr: "桃園市桃園區",
+        companyAddr: "桃園市桃園區",
+        phone: "03-3674356",
+        note: "",
+      },
+    });
+
+    const res = await request(app).get("/");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("目前站上共有 1 筆檢驗標識、0 張證書、0 筆授權資料。");
+  });
+
   it("should return search results for matching registration", async () => {
     await prisma.registration.create({
       data: {

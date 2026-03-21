@@ -66,11 +66,14 @@ app.get("/", async (req, res, next) => {
     const q = req.query.q?.trim();
     const canonicalUrl = `${req.protocol}://${req.get("host")}/`;
     if (!q) {
-      const recent = await prisma.registration.findMany({
-        orderBy: { updatedAt: "desc" },
-        take: 20,
-      });
-      res.render("index", { q: "", registrations: [], certificates: [], authorizations: [], recent, canonicalUrl });
+      const [recent, counts] = await Promise.all([
+        prisma.registration.findMany({
+          orderBy: { updatedAt: "desc" },
+          take: 20,
+        }),
+        getSiteCounts(),
+      ]);
+      res.render("index", { q: "", registrations: [], certificates: [], authorizations: [], recent, counts, canonicalUrl });
       return;
     }
 
@@ -128,7 +131,9 @@ app.get("/", async (req, res, next) => {
       }).catch(() => []),
     ]);
 
-    res.render("index", { q, registrations, certificates, authorizations, recent: [], canonicalUrl });
+    const counts = await getSiteCounts();
+
+    res.render("index", { q, registrations, certificates, authorizations, recent: [], counts, canonicalUrl });
   } catch (err) {
     next(err);
   }
@@ -136,6 +141,16 @@ app.get("/", async (req, res, next) => {
 
 const VALID_ID_RE = /^[RTDQMrtdqm][A-Za-z0-9]{5}$/;
 const VALID_TAX_ID_RE = /^\d{8}$/;
+
+async function getSiteCounts() {
+  const [registrations, certificates, authorizations] = await Promise.all([
+    prisma.registration.count(),
+    prisma.certificate.count(),
+    prisma.authorization.count().catch(() => 0),
+  ]);
+
+  return { registrations, certificates, authorizations };
+}
 
 async function refreshRegistration(id) {
   try {
