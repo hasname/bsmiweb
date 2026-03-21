@@ -76,6 +76,7 @@ describe("GET /", () => {
     const res = await request(app).get("/");
     expect(res.status).toBe(200);
     expect(res.text).toContain("搜尋");
+    expect(res.text).toContain("p.hasname.com/js/pa-43fhI07VwO-gqJCOrcpFU.js");
   });
 
   it("should show current data counts on the homepage", async () => {

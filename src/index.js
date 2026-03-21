@@ -20,8 +20,8 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        "script-src": ["'self'", "'unsafe-inline'"],
-        "connect-src": ["'self'", "https://*.ingest.sentry.io"],
+        "script-src": ["'self'", "'unsafe-inline'", "https://p.hasname.com"],
+        "connect-src": ["'self'", "https://*.ingest.sentry.io", "https://p.hasname.com"],
       },
     },
   }),
