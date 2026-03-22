@@ -123,6 +123,30 @@ describe("GET /", () => {
   });
 });
 
+describe("GET /atom.xml", () => {
+  it("should return Atom feed with recent registrations", async () => {
+    await prisma.registration.create({
+      data: {
+        id: "R45879",
+        taxId: "82781974",
+        applicant: "樂澤國際有限公司",
+        contactAddr: "桃園市桃園區",
+        companyAddr: "桃園市桃園區",
+        phone: "03-3674356",
+        note: "",
+      },
+    });
+
+    const res = await request(app).get("/atom.xml");
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toContain("application/atom+xml");
+    expect(res.text).toContain("<feed xmlns=\"http://www.w3.org/2005/Atom\">");
+    expect(res.text).toContain("BSMI 檢驗標識更新");
+    expect(res.text).toContain("R45879 — 樂澤國際有限公司");
+    expect(res.text).toContain("/bsmi/R45879");
+  });
+});
+
 describe("GET /nonexistent", () => {
   it("should return 404", async () => {
     const res = await request(app).get("/nonexistent");

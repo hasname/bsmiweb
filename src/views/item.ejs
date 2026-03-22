@@ -6,6 +6,7 @@
 <title><%= registration.id %> — BSMI 檢驗標識查詢</title>
 <meta name="description" content="BSMI 檢驗標識 <%= registration.id %> — <%= registration.applicant %>（統編 <%= registration.taxId %>），共 <%= registration.certificates.length %> 張證書">
 <link rel="canonical" href="<%= canonicalUrl %>">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="/atom.xml">
 <meta property="og:title" content="<%= registration.id %> — BSMI 檢驗標識查詢">
 <meta property="og:description" content="<%= registration.applicant %>（統編 <%= registration.taxId %>）— 共 <%= registration.certificates.length %> 張證書">
 <meta property="og:type" content="website">

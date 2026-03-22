@@ -45,6 +45,38 @@ const minifyOptions = {
   minifyCSS: true,
 };
 
+function escapeXml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+}
+
+function buildAtomFeed({ baseUrl, updatedAt, entries }) {
+  let xml = '<?xml version="1.0" encoding="utf-8"?>\n';
+  xml += '<feed xmlns="http://www.w3.org/2005/Atom">\n';
+  xml += `  <title>${escapeXml("BSMI 檢驗標識更新")}</title>\n`;
+  xml += `  <id>${escapeXml(`${baseUrl}/atom.xml`)}</id>\n`;
+  xml += `  <updated>${updatedAt}</updated>\n`;
+  xml += `  <link rel="self" href="${escapeXml(`${baseUrl}/atom.xml`)}" />\n`;
+  xml += `  <link rel="alternate" href="${escapeXml(baseUrl)}" />\n`;
+
+  for (const entry of entries) {
+    xml += "  <entry>\n";
+    xml += `    <title>${escapeXml(entry.title)}</title>\n`;
+    xml += `    <id>${escapeXml(entry.id)}</id>\n`;
+    xml += `    <updated>${entry.updatedAt}</updated>\n`;
+    xml += `    <link href="${escapeXml(entry.href)}" />\n`;
+    xml += `    <summary>${escapeXml(entry.summary)}</summary>\n`;
+    xml += "  </entry>\n";
+  }
+
+  xml += "</feed>\n";
+  return xml;
+}
+
 const originalRender = app.response.render;
 app.response.render = function (view, options, callback) {
   originalRender.call(this, view, options, async (err, html) => {
@@ -269,6 +301,35 @@ app.get("/sitemap.xml", async (req, res, next) => {
 
     res.set("Cache-Control", "public, max-age=3600");
     res.type("application/xml").send(xml);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get("/atom.xml", async (req, res, next) => {
+  try {
+    const registrations = await prisma.registration.findMany({
+      include: { _count: { select: { certificates: true } } },
+      orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
+      take: 20,
+    });
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const updatedAt = (registrations[0]?.updatedAt || new Date()).toISOString();
+    const xml = buildAtomFeed({
+      baseUrl,
+      updatedAt,
+      entries: registrations.map((reg) => ({
+        title: `${reg.id} — ${reg.applicant}`,
+        id: `${baseUrl}/bsmi/${reg.id}`,
+        updatedAt: reg.updatedAt.toISOString(),
+        href: `${baseUrl}/bsmi/${reg.id}`,
+        summary: `統編 ${reg.taxId}，共 ${reg._count.certificates} 張證書`,
+      })),
+    });
+
+    res.set("Cache-Control", "public, max-age=3600");
+    res.type("application/atom+xml").send(xml);
   } catch (err) {
     next(err);
   }
