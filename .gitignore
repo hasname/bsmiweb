@@ -4,3 +4,4 @@ ansible/lib/
 node_modules/
 prisma/dev.db
 src/generated/
+*.min.js
