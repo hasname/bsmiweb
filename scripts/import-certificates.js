@@ -15,6 +15,11 @@ const DATASETS = [
     name: "其他類",
     url: "https://data.bsmi.gov.tw/opendata/download/313000000G-000092-001.action",
   },
+  {
+    // Current-year newly issued certificates. Last so 電子類/其他類 win on overlap.
+    name: "當年度新發",
+    url: "https://data.bsmi.gov.tw/opendata/download/313000000G-000130-001.action",
+  },
 ];
 
 // Convert western date "2024/06/10" to ROC date "1130610"
