@@ -3,10 +3,14 @@
 prisma/schema.dev.prisma: prisma/schema.prisma
 	sed -e 's/provider = "mysql"/provider = "sqlite"/' -e 's/  *@db\.[A-Za-z]*//g' $< > $@
 
-ansible/lib/ansible_mitogen:
-	pip install --target=ansible/lib mitogen
+# Mitogen 0.3.49+ is required for ansible-core 2.21 (Ansible 14).
+MITOGEN_VERSION = 0.3.51
+ansible/lib/.mitogen-$(MITOGEN_VERSION):
+	rm -rf ansible/lib
+	pip install --target=ansible/lib 'mitogen==$(MITOGEN_VERSION)'
+	touch $@
 
-deploy: node_modules ansible/lib/ansible_mitogen
+deploy: node_modules ansible/lib/.mitogen-$(MITOGEN_VERSION)
 	npm run build
 	$(MAKE) --no-print-directory -C ../bsmiweb-credentials decrypt > .env.deploy.tmp
 	ansible-playbook -i ansible/inventory.ini ansible/deploy.yml -e dotenv_file=.env.deploy.tmp
