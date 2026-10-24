@@ -16,7 +16,7 @@ func escape(value string) string {
 }
 
 func (s *Server) sitemap(c *gin.Context) {
-	regs, err := s.Store.All(c.Request.Context(), false)
+	regs, err := s.Store.All(c.Request.Context())
 	if err != nil {
 		s.fail(c, err)
 		return

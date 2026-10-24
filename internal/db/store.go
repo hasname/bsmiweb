@@ -84,12 +84,8 @@ func (s *Store) Recent(ctx context.Context) ([]Registration, error) {
 	}
 	return regs, nil
 }
-func (s *Store) All(ctx context.Context, oldestFirst bool) ([]Registration, error) {
-	order := "id"
-	if oldestFirst {
-		order = s.recentOrder() + ",id"
-	}
-	return queryRows(ctx, s, scanRegistration, "SELECT "+registrationColumns+" FROM registration ORDER BY "+order)
+func (s *Store) All(ctx context.Context) ([]Registration, error) {
+	return queryRows(ctx, s, scanRegistration, "SELECT "+registrationColumns+" FROM registration ORDER BY id")
 }
 func (s *Store) RefreshStats(ctx context.Context) ([]RefreshStat, error) {
 	return queryRows(ctx, s, func(row scanner) (RefreshStat, error) {
