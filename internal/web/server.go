@@ -69,7 +69,8 @@ func New(store *db.Store, fetch FetchRegistration, sentryDSN string) (*Server, e
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	s := &Server{Store: store, fetch: fetch, templates: t, sentryDSN: sentryDSN, ctx: ctx, cancel: cancel, refreshing: map[string]bool{}, minifier: minify.New()}
-	s.minifier.Add("text/html", &htmlmin.Minifier{KeepDocumentTags: true, KeepEndTags: true, KeepQuotes: true})
+	// CSS attribute selectors depend on explicit defaults such as input[type="text"].
+	s.minifier.Add("text/html", &htmlmin.Minifier{KeepDefaultAttrVals: true, KeepDocumentTags: true, KeepEndTags: true, KeepQuotes: true})
 	s.minifier.Add("text/css", &css.Minifier{})
 	r := gin.New()
 	s.router = r

@@ -82,7 +82,8 @@ func TestRoutesAndSearch(t *testing.T) {
 		t.Fatal(w)
 	}
 	w = request(app, "/")
-	for _, text := range []string{"p.hasname.com/js/pa-43fhI07VwO-gqJCOrcpFU.js", "/sentry.min.js", "最近更新"} {
+	// Minification must preserve the attributes used by form CSS selectors.
+	for _, text := range []string{"p.hasname.com/js/pa-43fhI07VwO-gqJCOrcpFU.js", "/sentry.min.js", "最近更新", `<input type="text"`, `<button type="submit"`} {
 		if !strings.Contains(w.Body.String(), text) {
 			t.Fatal("missing " + text)
 		}
