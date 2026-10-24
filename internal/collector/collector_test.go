@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
+	http "github.com/bogdanfinn/fhttp"
 	"github.com/hasname/bsmiweb/internal/db"
 )
 

@@ -91,8 +91,12 @@ afterward. Refreshing a registration can attach these imported certificates.
 Authorization replacements and certificate imports are transactional; malformed
 or empty authorization feeds leave the previous data intact.
 
+Outbound crawler requests use `tls-client` v1.17.1 with the Chrome 152 TLS and
+HTTP/2 profile, randomized TLS extension order, and a matching User-Agent.
+HTTP/3 is disabled. The two-minute request timeout covers redirects and reading
+the response body; cancellation still follows the caller's context.
 The existing TLS exception for the self-signed `data.bsmi.gov.tw` endpoint is
-limited to that host. Other outbound requests still verify certificates.
+checked on every redirect hop. Other outbound requests still verify certificates.
 
 ## Migrating from Prisma
 

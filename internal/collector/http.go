@@ -2,37 +2,66 @@ package collector
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"time"
+
+	http "github.com/bogdanfinn/fhttp"
+	tlsclient "github.com/bogdanfinn/tls-client"
+	"github.com/bogdanfinn/tls-client/profiles"
 )
 
-const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36"
 
 type Client struct {
 	HTTP  *http.Client
 	Sleep func(context.Context, time.Duration) error
 }
 
-type dataTransport struct{ verified, openData *http.Transport }
+type dataTransport struct{ verified, openData tlsclient.HttpClient }
 
 func (t dataTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	if r.URL.Scheme == "https" && r.URL.Hostname() == "data.bsmi.gov.tw" {
-		return t.openData.RoundTrip(r)
+		return t.openData.Do(r)
 	}
-	return t.verified.RoundTrip(r)
+	return t.verified.Do(r)
 }
 
-func NewClient() *Client {
-	verified := http.DefaultTransport.(*http.Transport).Clone()
-	openData := verified.Clone()
+func (t dataTransport) CloseIdleConnections() {
+	t.verified.CloseIdleConnections()
+	t.openData.CloseIdleConnections()
+}
+
+func newTransport(options ...tlsclient.HttpClientOption) (*dataTransport, error) {
+	options = append(options,
+		tlsclient.WithClientProfile(profiles.Chrome_152),
+		tlsclient.WithRandomTLSExtensionOrder(),
+		tlsclient.WithDisableHttp3(),
+		// The outer client owns redirects and the deadline across the entire request.
+		tlsclient.WithNotFollowRedirects(),
+		tlsclient.WithTimeoutSeconds(0),
+	)
+	verified, err := tlsclient.NewHttpClient(tlsclient.NewNoopLogger(), options...)
+	if err != nil {
+		return nil, err
+	}
 	// The open-data endpoint uses a self-signed certificate. Keep the existing
-	// exception confined to that host; all other hosts still verify TLS.
-	openData.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} // #nosec G402
-	return &Client{HTTP: &http.Client{Timeout: 2 * time.Minute, Transport: dataTransport{verified, openData}}, Sleep: Sleep}
+	// exception confined to that host, including after each redirect.
+	openData, err := tlsclient.NewHttpClient(tlsclient.NewNoopLogger(), append(options, tlsclient.WithInsecureSkipVerify())...)
+	if err != nil {
+		verified.CloseIdleConnections()
+		return nil, err
+	}
+	return &dataTransport{verified: verified, openData: openData}, nil
+}
+
+func NewClient() (*Client, error) {
+	transport, err := newTransport()
+	if err != nil {
+		return nil, err
+	}
+	return &Client{HTTP: &http.Client{Timeout: 2 * time.Minute, Transport: transport}, Sleep: Sleep}, nil
 }
 
 func Sleep(ctx context.Context, d time.Duration) error {
@@ -61,6 +90,7 @@ func (c *Client) request(ctx context.Context, method, endpoint, body, contentTyp
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 	req.Header.Set("Accept-Language", "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7")
+	req.Header[http.HeaderOrderKey] = []string{"host", "content-length", "user-agent", "content-type", "accept", "origin", "referer", "accept-encoding", "accept-language"}
 	if req.URL.Hostname() == "data.bsmi.gov.tw" {
 		req.Header.Set("User-Agent", "bsmiweb/1.0")
 	}

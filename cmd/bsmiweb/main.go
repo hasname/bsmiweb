@@ -80,7 +80,11 @@ func run(args []string) error {
 	if err := store.CheckVersion(ctx); err != nil {
 		return err
 	}
-	client := collector.NewClient()
+	client, err := collector.NewClient()
+	if err != nil {
+		return err
+	}
+	defer client.HTTP.CloseIdleConnections()
 	jobs := collector.Jobs{Client: client, Store: store, Location: cfg.Location}
 	switch command {
 	case "serve":
