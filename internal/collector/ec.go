@@ -14,6 +14,8 @@ import (
 
 var idRE = regexp.MustCompile(`(?i)[RTDQM]\d{5}`)
 var contextRE = regexp.MustCompile(`(?i)(?:BSMI|檢驗|認證|標檢局|登錄字號|商檢字號)[^\n]{0,30}([RTDQM]\d{5})`)
+var booksPageRE = regexp.MustCompile(`/page/(\d+)/`)
+var momoChunkRE = regexp.MustCompile(`self\.__next_f\.push\(\[1,("(?:\\.|[^"\\])*")\]\)`)
 
 func ExtractIDs(text string, withContext bool) []string {
 	ids := map[string]bool{}
@@ -109,7 +111,7 @@ func (c *Client) books(ctx context.Context, page int) (searchPage, error) {
 		return searchPage{}, err
 	}
 	result := searchPage{IDs: ExtractIDs(body, false), Pages: 1}
-	for _, m := range regexp.MustCompile(`/page/(\d+)/`).FindAllStringSubmatch(body, -1) {
+	for _, m := range booksPageRE.FindAllStringSubmatch(body, -1) {
 		n, _ := strconv.Atoi(m[1])
 		result.Pages = max(result.Pages, n)
 	}
@@ -184,7 +186,7 @@ func (c *Client) momo(ctx context.Context, page int) (searchPage, error) {
 	if err != nil {
 		return searchPage{}, err
 	}
-	chunks := regexp.MustCompile(`self\.__next_f\.push\(\[1,("(?:\\.|[^"\\])*")\]\)`).FindAllStringSubmatch(body, -1)
+	chunks := momoChunkRE.FindAllStringSubmatch(body, -1)
 	for _, chunk := range chunks {
 		var text string
 		if err := json.Unmarshal([]byte(chunk[1]), &text); err != nil {

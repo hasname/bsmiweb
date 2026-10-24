@@ -25,7 +25,7 @@ func mockClient(fn func(*http.Request) (string, int)) *Client {
 }
 func emptyFixture(t *testing.T) string {
 	t.Helper()
-	data, err := os.ReadFile("../../test/fixtures/bsmi-not-found.html")
+	data, err := os.ReadFile("testdata/bsmi-not-found.html")
 	if err != nil {
 		t.Fatal(err)
 	}
