@@ -72,7 +72,7 @@ are trusted for `X-Forwarded-Proto`. `SENTRY_DSN_WEB`, `SENTRY_DSN_CRON`, and
 | Time | Job |
 | --- | --- |
 | 03:00 | Certificate and authorization XML imports |
-| 04:00 | Refresh registrations changed within seven days |
+| 04:00 | Freshness-based registration refresh |
 | 05:00 | PChome |
 | 06:00 | Momo |
 | 07:00 | Books |
@@ -81,6 +81,17 @@ are trusted for `X-Forwarded-Proto`. `SENTRY_DSN_WEB`, `SENTRY_DSN_CRON`, and
 Times use `TZ`, or the host's local timezone when unset. Set `TZ=Asia/Taipei`
 for Taiwan time. A job is skipped if the previous job is still running.
 Termination cancels outstanding requests and database work.
+
+The `recent` job allocates its daily checks (`refreshBudget` in
+`internal/collector/jobs.go`) to maximize average freshness, following the
+optimal policy of Cho and Garcia-Molina, "Synchronizing a database to improve
+freshness" (SIGMOD 2000). Each check asks BSMI whether any certificate changed
+since the registration was last synchronized, and refreshes it if so. Change
+rates are estimated from previous checks as in "Estimating frequency of change"
+(ACM TOIT 2003); registrations not yet checked use the rate across all checks.
+Registrations are checked at most daily, and those that change too often to be
+kept fresh are skipped, as the policy prescribes. Page views still refresh any
+registration older than 24 hours.
 
 The three certificate datasets retain their precedence: electronic products,
 other products, then current-year newly issued certificates. Imports preserve

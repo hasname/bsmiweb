@@ -40,18 +40,26 @@ func (j *Jobs) Run(ctx context.Context, name string) error {
 
 func report(err error) { log.Print(err); sentry.CaptureException(err) }
 
+// refreshBudget is the number of registrations checked per daily run. At about
+// three seconds per check, a run ends before the next scheduled job starts.
+const refreshBudget = 1000
+
+// recent checks the registrations chosen for freshness and refreshes those with
+// certificates modified since they were last synchronized.
 func (j *Jobs) recent(ctx context.Context) error {
-	regs, err := j.Store.All(ctx, true)
+	stats, err := j.Store.RefreshStats(ctx)
 	if err != nil {
 		return err
 	}
-	to := time.Now().In(j.Location)
-	from := to.Add(-7 * 24 * time.Hour)
 	var failures []error
-	for _, r := range regs {
-		changed, err := j.Client.HasRecentChanges(ctx, r.ID, from, to)
+	for _, s := range refreshOrder(stats, time.Now(), refreshBudget) {
+		now := time.Now()
+		changed, err := j.Client.HasRecentChanges(ctx, s.ID, s.SyncedAt.In(j.Location), now.In(j.Location))
 		if err == nil && changed {
-			err = j.refresh(ctx, r.ID)
+			err = j.refresh(ctx, s.ID)
+		}
+		if err == nil {
+			err = j.Store.RecordCheck(ctx, s.ID, changed, int64(now.Sub(s.SyncedAt)/time.Second))
 		}
 		if err != nil {
 			if errors.Is(err, ErrRateLimited) || ctx.Err() != nil {
