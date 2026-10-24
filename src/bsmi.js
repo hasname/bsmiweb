@@ -10,7 +10,10 @@ function parseVendor(html) {
         "[：:]\\s*</(?:p|label)>\\s*(?:</div>\\s*)?<div[^>]*>\\s*<p>([\\s\\S]*?)</p>",
     );
     const m = html.match(re);
-    return m ? m[1].trim() : "";
+    if (!m) {
+      throw new Error(`BSMI vendor field could not be parsed: ${label}`);
+    }
+    return m[1].trim();
   };
 
   return {
@@ -28,7 +31,9 @@ function parseCertificates(html) {
 
   // Find the certificate list section
   const listStart = html.indexOf("panel-heading \">證書資料");
-  if (listStart === -1) return certs;
+  if (listStart === -1) {
+    throw new Error("BSMI certificate section not found");
+  }
   const listSection = html.slice(listStart);
 
   // Split by the row divs
@@ -46,7 +51,9 @@ function parseCertificates(html) {
       cols.push(m[1].trim());
     }
 
-    if (cols.length < 4) continue;
+    if (cols.length < 4) {
+      throw new Error("BSMI certificate row could not be parsed");
+    }
 
     // Column 0: 證書編號<br>有效期間<br>狀態
     const certParts = cols[0].split(/<br\s*\/?>/);
@@ -78,7 +85,9 @@ function parseCertificates(html) {
       ? cols[4].replace(/<[^>]*>/g, "").trim()
       : "";
 
-    if (!certId) continue;
+    if (!certId) {
+      throw new Error("BSMI certificate ID not found");
+    }
 
     certs.push({
       id: certId,
@@ -319,13 +328,21 @@ export async function fetchBsmi(markId) {
 
   const html = await res.text();
 
-  // Check if we got results
+  if (html.includes("系統忙碌中")) {
+    throw new Error("BSMI rate limited");
+  }
+
   if (!html.includes("廠商資料")) {
-    return null;
+    throw new Error("BSMI vendor section not found");
   }
 
   const vendor = parseVendor(html);
   const certificates = parseCertificates(html);
+
+  // BSMI returns the same template with empty fields when no record exists.
+  if (Object.values(vendor).every((value) => value === "") && certificates.length === 0) {
+    return null;
+  }
 
   return {
     id: markId.toUpperCase(),

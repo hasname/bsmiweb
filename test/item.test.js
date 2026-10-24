@@ -141,6 +141,53 @@ describe("GET /bsmi/:id", () => {
 
     const res = await request(app).get("/bsmi/R00000");
     expect(res.status).toBe(404);
+    expect(await prisma.registration.count()).toBe(0);
+    expect(await prisma.certificate.count()).toBe(0);
+
+    await request(app).get("/bsmi/R00000");
+    expect(mockFetchBsmi).toHaveBeenCalledTimes(2);
+  });
+
+  it("should store vendor data without certificates", async () => {
+    mockFetchBsmi.mockResolvedValue({ ...sampleData, certificates: [] });
+
+    const res = await request(app).get("/bsmi/R45879");
+    expect(res.status).toBe(200);
+    expect(await prisma.registration.count()).toBe(1);
+    expect(await prisma.certificate.count()).toBe(0);
+  });
+
+  it.each(["not found", "failed"])("should keep stale data when refresh is %s", async (result) => {
+    const { certificates, ...vendor } = sampleData;
+    await prisma.registration.create({
+      data: {
+        ...vendor,
+        updatedAt: new Date("2020-01-01T00:00:00Z"),
+        certificates: { create: certificates },
+      },
+    });
+    const before = await prisma.registration.findUnique({
+      where: { id: sampleData.id },
+      include: { certificates: true },
+    });
+    const errorLog = jest.spyOn(console, "error").mockImplementation(() => {});
+    if (result === "not found") {
+      mockFetchBsmi.mockResolvedValue(null);
+    } else {
+      mockFetchBsmi.mockRejectedValue(new Error("Unexpected BSMI response"));
+    }
+
+    try {
+      const res = await request(app).get("/bsmi/R45879");
+      expect(res.status).toBe(200);
+      expect(mockFetchBsmi).toHaveBeenCalledWith("R45879");
+      expect(await prisma.registration.findUnique({
+        where: { id: sampleData.id },
+        include: { certificates: true },
+      })).toEqual(before);
+    } finally {
+      errorLog.mockRestore();
+    }
   });
 
   it("should accept lowercase ID", async () => {
