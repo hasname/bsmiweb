@@ -1,0 +1,20 @@
+<table>
+<thead>
+<tr>
+  <th>標識號碼</th>
+  <th>統編</th>
+  <th>申請人</th>
+  <th>電話</th>
+</tr>
+</thead>
+<tbody>
+{{range .}}
+<tr>
+  <td><a href="/bsmi/{{.ID}}">{{.ID}}</a></td>
+  <td><a href="/ban/{{.TaxID}}">{{.TaxID}}</a></td>
+  <td>{{.Applicant}}</td>
+  <td>{{.Phone}}</td>
+</tr>
+{{end}}
+</tbody>
+</table>
