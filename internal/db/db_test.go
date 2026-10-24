@@ -166,6 +166,48 @@ func testImport(t *testing.T, s *Store) {
 	}
 }
 
+func TestRefreshStats(t *testing.T) { testRefreshStats(t, testStore(t)) }
+func testRefreshStats(t *testing.T, s *Store) {
+	t.Helper()
+	ctx := context.Background()
+	if err := s.SaveRegistration(ctx, sample()); err != nil {
+		t.Fatal(err)
+	}
+	stat := func() RefreshStat {
+		t.Helper()
+		stats, err := s.RefreshStats(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, v := range stats {
+			if v.ID == "R45879" {
+				return v
+			}
+		}
+		t.Fatalf("missing stats: %+v", stats)
+		return RefreshStat{}
+	}
+	older, old := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC), time.Date(2026, 2, 3, 4, 5, 6, 0, time.UTC)
+	exec(t, s, "UPDATE registration SET updated_at=? WHERE id='R45879'", old)
+	if v := stat(); !v.SyncedAt.Equal(old) || v.Checks != 0 || v.Changes != 0 || v.CheckSeconds != 0 {
+		t.Fatalf("unchecked stats: %+v", v)
+	}
+	if err := s.RecordCheck(ctx, "R45879", true, 86400); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RecordCheck(ctx, "R45879", false, 3600); err != nil {
+		t.Fatal(err)
+	}
+	if v := stat(); time.Since(v.SyncedAt) > time.Minute || v.Checks != 2 || v.Changes != 1 || v.CheckSeconds != 90000 {
+		t.Fatalf("checked stats: %+v", v)
+	}
+	// A refresh after the last check, such as from a page view, also synchronizes.
+	exec(t, s, "UPDATE registration SET checked_at=? WHERE id='R45879'", older)
+	if v := stat(); !v.SyncedAt.Equal(old) {
+		t.Fatalf("refresh after check: %+v", v)
+	}
+}
+
 func TestImportRestoresForeignKeysOnFailure(t *testing.T) {
 	s := testStore(t)
 	exec(t, s, "CREATE TRIGGER reject_import BEFORE INSERT ON certificate BEGIN SELECT RAISE(FAIL, 'fail import'); END")

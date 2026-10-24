@@ -16,7 +16,7 @@ type Store struct {
 	Driver string
 }
 
-const Version = 3
+const Version = 4
 
 func Open(driver, dsn string) (*Store, error) {
 	switch driver {

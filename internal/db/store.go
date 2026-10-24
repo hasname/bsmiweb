@@ -91,6 +91,29 @@ func (s *Store) All(ctx context.Context, oldestFirst bool) ([]Registration, erro
 	}
 	return queryRows(ctx, s, scanRegistration, "SELECT "+registrationColumns+" FROM registration ORDER BY "+order)
 }
+func (s *Store) RefreshStats(ctx context.Context) ([]RefreshStat, error) {
+	return queryRows(ctx, s, func(row scanner) (RefreshStat, error) {
+		var v RefreshStat
+		var updated, checked Timestamp
+		err := row.Scan(&v.ID, &updated, &checked, &v.Checks, &v.Changes, &v.CheckSeconds)
+		v.SyncedAt = updated.Time
+		if checked.After(v.SyncedAt) {
+			v.SyncedAt = checked.Time
+		}
+		return v, err
+	}, "SELECT id,updated_at,checked_at,check_count,change_count,check_seconds FROM registration ORDER BY id")
+}
+
+// RecordCheck adds one BSMI change check covering the given number of seconds.
+func (s *Store) RecordCheck(ctx context.Context, id string, changed bool, seconds int64) error {
+	change := 0
+	if changed {
+		change = 1
+	}
+	_, err := s.DB.ExecContext(ctx, "UPDATE registration SET checked_at=?,check_count=check_count+1,change_count=change_count+?,check_seconds=check_seconds+? WHERE id=?", s.now(), change, seconds, id)
+	return err
+}
+
 func (s *Store) ByTaxID(ctx context.Context, id string) ([]Registration, error) {
 	return queryRows(ctx, s, scanRegistration, "SELECT "+registrationColumns+" FROM registration WHERE tax_id=? ORDER BY id", id)
 }

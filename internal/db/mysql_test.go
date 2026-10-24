@@ -78,6 +78,7 @@ func TestMySQLMigrations(t *testing.T) {
 			t.Fatal(err)
 		}
 		testImport(t, s)
+		testRefreshStats(t, s)
 	})
 	for _, version := range []int{1, 2, 3} {
 		t.Run(fmt.Sprintf("Prisma version %d", version), func(t *testing.T) {

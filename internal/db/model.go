@@ -25,12 +25,26 @@ type Authorization struct {
 
 type Counts struct{ Registrations, Certificates, Authorizations int }
 
+// RefreshStat summarizes the BSMI change checks of a registration. SyncedAt is
+// the last time the local copy was known to be current: the later of its last
+// refresh and its last check.
+type RefreshStat struct {
+	ID              string
+	SyncedAt        time.Time
+	Checks, Changes int
+	CheckSeconds    int64
+}
+
 // Prisma SQLite stores epoch milliseconds; older raw imports use SQL datetime
 // strings. Accept both representations without rewriting existing data.
+// NULL scans as the zero time.
 type Timestamp struct{ time.Time }
 
 func (t *Timestamp) Scan(value any) error {
 	switch v := value.(type) {
+	case nil:
+		t.Time = time.Time{}
+		return nil
 	case time.Time:
 		t.Time = v.UTC()
 		return nil
