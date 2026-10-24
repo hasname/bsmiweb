@@ -7,7 +7,8 @@ Type=simple
 WorkingDirectory={{ deploy_path }}
 Environment=NODE_ENV=production
 EnvironmentFile={{ deploy_path }}/.env
-ExecStart={{ mise_node_bin }}/node src/index.js
+ExecStart={{ deploy_path }}/bsmiweb serve
+TimeoutStopSec=30
 Restart=always
 RestartSec=5
 

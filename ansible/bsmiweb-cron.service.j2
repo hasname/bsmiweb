@@ -7,7 +7,8 @@ Type=simple
 WorkingDirectory={{ deploy_path }}
 Environment=NODE_ENV=production
 EnvironmentFile={{ deploy_path }}/.env
-ExecStart={{ mise_node_bin }}/node src/cron.js
+ExecStart={{ deploy_path }}/bsmiweb cron
+TimeoutStopSec=90
 Restart=always
 RestartSec=5
 

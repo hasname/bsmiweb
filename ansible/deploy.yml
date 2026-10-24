@@ -3,63 +3,76 @@
   vars:
     home_dir: "{{ ansible_facts['user_dir'] }}"
     deploy_path: "{{ home_dir }}/bsmiweb"
-    mise_node_bin: "{{ home_dir }}/.local/share/mise/shims"
     systemd_user_dir: "{{ home_dir }}/.config/systemd/user"
+    services: [bsmiweb.service, bsmiweb-cron.service]
+    systemd_user_env:
+      XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+      DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ ansible_facts['user_uid'] }}/bus"
   tasks:
-    - name: Sync project files
+    - name: Create application directory
+      ansible.builtin.file:
+        path: "{{ deploy_path }}"
+        state: directory
+        mode: "0755"
+
+    - name: Upload the next binary
       ansible.posix.synchronize:
-        src: "{{ playbook_dir }}/../"
-        dest: "{{ deploy_path }}/"
-        rsync_opts:
-          - "--exclude=.git"
-          - "--exclude=node_modules"
-          - "--exclude=prisma/dev.db"
-          - "--exclude=src/generated"
-          - "--exclude=.env"
-          - "--exclude=ansible/lib"
+        src: "{{ playbook_dir }}/../dist/bsmiweb"
+        dest: "{{ deploy_path }}/bsmiweb.next"
+        owner: false
+        group: false
 
     - name: Copy .env file
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../{{ dotenv_file }}"
+        src: "{{ dotenv_file }}"
         dest: "{{ deploy_path }}/.env"
         mode: "0600"
+      no_log: true
 
-    - name: Install npm dependencies
+    - name: Inspect existing user services
       ansible.builtin.command:
-        cmd: npm install --omit=dev
-        chdir: "{{ deploy_path }}"
-      environment:
-        PATH: "{{ mise_node_bin }}:{{ ansible_facts['env']['PATH'] }}"
+        argv: [systemctl, --user, show, "{{ item }}", --property=LoadState, --value]
+      loop: "{{ services }}"
+      register: existing_services
+      changed_when: false
+      environment: "{{ systemd_user_env }}"
 
-    - name: Mark existing migrations as applied
-      ansible.builtin.command:
-        cmd: "npx prisma migrate resolve --applied {{ item }}"
-        chdir: "{{ deploy_path }}"
-      environment:
-        NODE_ENV: production
-        PATH: "{{ mise_node_bin }}:{{ ansible_facts['env']['PATH'] }}"
-      loop:
-        - 0001_baseline
-        - 0002_rename_to_snake_case
-      register: resolve_result
-      failed_when: false
-      changed_when: resolve_result.rc == 0
+    - name: Stop existing writers before database migration
+      ansible.builtin.systemd_service:
+        name: "{{ item.item }}"
+        state: stopped
+        scope: user
+      loop: "{{ existing_services.results }}"
+      when: item.stdout | trim != 'not-found'
+      environment: "{{ systemd_user_env }}"
 
-    - name: Run database migrations
+    # A failed migration deliberately leaves services stopped. Do not hide the
+    # error or restart an old writer against a partially migrated schema.
+    - name: Verify Prisma history and run database migrations
       ansible.builtin.command:
-        cmd: npx prisma migrate deploy
-        chdir: "{{ deploy_path }}"
-      environment:
-        NODE_ENV: production
-        PATH: "{{ mise_node_bin }}:{{ ansible_facts['env']['PATH'] }}"
-
-    - name: Generate Prisma client
-      ansible.builtin.command:
-        cmd: npx prisma generate
+        cmd: ./bsmiweb.next migrate
         chdir: "{{ deploy_path }}"
       environment:
         NODE_ENV: production
-        PATH: "{{ mise_node_bin }}:{{ ansible_facts['env']['PATH'] }}"
+      changed_when: false
+
+    - name: Inspect the previous Go binary
+      ansible.builtin.stat:
+        path: "{{ deploy_path }}/bsmiweb"
+      register: previous_binary
+
+    - name: Keep the previous Go binary for rollback
+      ansible.builtin.copy:
+        src: "{{ deploy_path }}/bsmiweb"
+        dest: "{{ deploy_path }}/bsmiweb.previous"
+        remote_src: true
+        mode: "0755"
+      when: previous_binary.stat.exists
+
+    - name: Activate the new binary
+      ansible.builtin.command:
+        argv: [mv, "{{ deploy_path }}/bsmiweb.next", "{{ deploy_path }}/bsmiweb"]
+      changed_when: true
 
     - name: Create systemd user directory
       ansible.builtin.file:
@@ -69,24 +82,32 @@
 
     - name: Install systemd user service files
       ansible.builtin.template:
-        src: "{{ item.src }}"
-        dest: "{{ systemd_user_dir }}/{{ item.dest }}"
+        src: "{{ playbook_dir }}/{{ item }}.j2"
+        dest: "{{ systemd_user_dir }}/{{ item }}"
         mode: "0644"
-      loop:
-        - { src: "{{ playbook_dir }}/bsmiweb.service.j2", dest: "bsmiweb.service" }
-        - { src: "{{ playbook_dir }}/bsmiweb-cron.service.j2", dest: "bsmiweb-cron.service" }
+      loop: "{{ services }}"
 
     - name: Reload systemd user daemon
-      ansible.builtin.systemd:
+      environment: "{{ systemd_user_env }}"
+      ansible.builtin.systemd_service:
         daemon_reload: true
         scope: user
 
     - name: Enable and restart bsmiweb services
-      ansible.builtin.systemd:
+      environment: "{{ systemd_user_env }}"
+      ansible.builtin.systemd_service:
         name: "{{ item }}"
         state: restarted
         enabled: true
         scope: user
-      loop:
-        - bsmiweb.service
-        - bsmiweb-cron.service
+      loop: "{{ services }}"
+
+    - name: Wait for the web server and database
+      ansible.builtin.command:
+        cmd: ./bsmiweb healthcheck
+        chdir: "{{ deploy_path }}"
+      register: health
+      changed_when: false
+      until: health.rc == 0
+      retries: 10
+      delay: 2

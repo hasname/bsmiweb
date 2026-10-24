@@ -6,7 +6,9 @@ After=network.target
 Type=simple
 WorkingDirectory=/home/service/bsmiweb
 EnvironmentFile=/home/service/bsmiweb/.env
-ExecStart=/home/service/.local/share/mise/shims/node --import ./src/instrument-web.js src/index.js
+Environment=NODE_ENV=production
+ExecStart=/home/service/bsmiweb/bsmiweb serve
+TimeoutStopSec=30
 Restart=always
 RestartSec=5
 
