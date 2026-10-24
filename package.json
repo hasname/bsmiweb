@@ -1,62 +1,15 @@
 {
   "name": "bsmiweb",
   "version": "1.0.0",
-  "description": "",
+  "description": "Build tooling for the self-hosted Sentry browser asset; the application runs in Go.",
   "type": "module",
-  "main": "src/index.js",
   "scripts": {
-    "build": "esbuild src/sentry-browser.js --bundle --minify --format=iife --global-name=Sentry --outfile=public/sentry.min.js",
-    "lint": "eslint .",
-    "test": "DATABASE_URL='file::memory:' NODE_OPTIONS='--experimental-vm-modules --experimental-transform-types' jest"
+    "build": "esbuild browser/sentry.js --bundle --minify --format=iife --global-name=Sentry --outfile=internal/web/static/sentry.min.js && cp node_modules/@sentry/browser/LICENSE internal/web/static/sentry-LICENSE.txt"
   },
   "author": "Gea-Suan Lin <gslin@gslin.com>",
   "license": "MIT",
-  "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.4.0",
-    "@prisma/adapter-mariadb": "^7.5.0",
-    "@prisma/client": "^7.4.0",
-    "@sentry/node": "^10.44.0",
-    "better-sqlite3": "^12.6.2",
-    "compression": "^1.8.1",
-    "dotenv": "^17.3.1",
-    "ejs": "^4.0.1",
-    "express": "^5.2.1",
-    "helmet": "^8.1.0",
-    "html-minifier-terser": "^7.2.0",
-    "node-schedule": "^2.1.1"
-  },
-  "jest": {
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ],
-    "transform": {
-      "\\.ts$": [
-        "@swc/jest",
-        {
-          "jsc": {
-            "parser": {
-              "syntax": "typescript"
-            },
-            "target": "esnext"
-          },
-          "module": {
-            "type": "es6"
-          }
-        }
-      ]
-    }
-  },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@sentry/browser": "^10.44.0",
-    "@jest/globals": "^30.2.0",
-    "@swc/core": "^1.15.11",
-    "@swc/jest": "^0.2.39",
-    "esbuild": "^0.27.4",
-    "eslint": "^10.0.0",
-    "globals": "^17.3.0",
-    "jest": "^30.2.0",
-    "prisma": "^7.4.0",
-    "supertest": "^7.2.2"
+    "@sentry/browser": "10.45.0",
+    "esbuild": "0.27.4"
   }
 }
