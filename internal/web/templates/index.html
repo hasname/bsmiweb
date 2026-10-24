@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BSMI 檢驗標識查詢</title>
+<link rel="canonical" href="{{.CanonicalURL}}">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="/atom.xml">
+<style>
+body { font-family: sans-serif; margin: 2em; }
+table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+th { background: #f5f5f5; }
+form { margin-bottom: 2em; }
+input[type="text"] { padding: 0.5em; font-size: 1em; width: 20em; }
+button { padding: 0.5em 1em; font-size: 1em; }
+</style>
+{{template "sentry.html" .}}
+{{template "plausible.html" .}}
+</head>
+<body>
+{{template "header.html" .}}
+<h1>BSMI 檢驗標識查詢</h1>
+<p>目前站上共有 {{.Counts.Registrations}} 筆檢驗標識、{{.Counts.Certificates}} 張證書、{{.Counts.Authorizations}} 筆授權資料。</p>
+
+<form method="get" action="/">
+  <input type="text" name="q" value="{{.Query}}" placeholder="輸入關鍵字搜尋">
+  <button type="submit">搜尋</button>
+</form>
+
+{{if and (not .Query) .Recent}}
+<h2>最近更新</h2>
+<table>
+<thead>
+<tr>
+  <th>標識號碼</th>
+  <th>統編</th>
+  <th>申請人</th>
+  <th>電話</th>
+</tr>
+</thead>
+<tbody>
+{{range $reg := .Recent}}
+<tr>
+  <td><a href="/bsmi/{{$reg.ID}}">{{$reg.ID}}</a></td>
+  <td><a href="/ban/{{$reg.TaxID}}">{{$reg.TaxID}}</a></td>
+  <td>{{$reg.Applicant}}</td>
+  <td>{{$reg.Phone}}</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{end}}
+
+{{if .Query}}
+  {{if and (not .Registrations) (not .Certificates) (not .Authorizations)}}
+    <p>無搜尋結果。</p>
+  {{end}}
+
+  {{if .Registrations}}
+  <h2>檢驗標識</h2>
+  <table>
+  <thead>
+  <tr>
+    <th>標識號碼</th>
+    <th>統編</th>
+    <th>申請人</th>
+    <th>電話</th>
+  </tr>
+  </thead>
+  <tbody>
+  {{range $reg := .Registrations}}
+  <tr>
+    <td><a href="/bsmi/{{$reg.ID}}">{{$reg.ID}}</a></td>
+    <td><a href="/ban/{{$reg.TaxID}}">{{$reg.TaxID}}</a></td>
+    <td>{{$reg.Applicant}}</td>
+    <td>{{$reg.Phone}}</td>
+  </tr>
+  {{end}}
+  </tbody>
+  </table>
+  {{end}}
+
+  {{if .Certificates}}
+  <h2>證書</h2>
+  <table>
+  <thead>
+  <tr>
+    <th>證書編號</th>
+    <th>標識號碼</th>
+    <th>產品名稱</th>
+    <th>主型式</th>
+    <th style="white-space: nowrap">狀態</th>
+  </tr>
+  </thead>
+  <tbody>
+  {{range $cert := .Certificates}}
+  <tr>
+    <td>{{$cert.ID}}</td>
+    <td><a href="/bsmi/{{$cert.RegistrationID}}">{{$cert.RegistrationID}}</a></td>
+    <td>{{$cert.ProductName}}</td>
+    <td>{{$cert.MainModel}}</td>
+    <td>{{$cert.Status}}</td>
+  </tr>
+  {{end}}
+  </tbody>
+  </table>
+  {{end}}
+
+  {{if .Authorizations}}
+  <h2>授權資料</h2>
+  <table>
+  <thead>
+  <tr>
+    <th>授權證號</th>
+    <th>證書編號</th>
+    <th>授權人名稱</th>
+    <th>主型式</th>
+    <th>被授權人名稱</th>
+    <th>被授權人統編</th>
+  </tr>
+  </thead>
+  <tbody>
+  {{range $auth := .Authorizations}}
+  <tr>
+    <td>{{$auth.ID}}</td>
+    <td>{{$auth.CertificateID}}</td>
+    <td>{{$auth.AuthorizerName}}</td>
+    <td>{{$auth.MainModel}}</td>
+    <td>{{$auth.AuthorizeeName}}</td>
+    <td><a href="/ban/{{$auth.AuthorizeeTaxID}}">{{$auth.AuthorizeeTaxID}}</a></td>
+  </tr>
+  {{end}}
+  </tbody>
+  </table>
+  {{end}}
+{{end}}
+</body>
+</html>

@@ -1,0 +1,6 @@
+{{if .SentryDSN}}
+<script src="/sentry.min.js"></script>
+<script>
+Sentry.init({ dsn: "{{.SentryDSN}}" });
+</script>
+{{end}}

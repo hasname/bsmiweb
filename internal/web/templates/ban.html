@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>統編 {{.TaxID}} — BSMI 檢驗標識查詢</title>
+<meta name="description" content="統編 {{.TaxID}} 的 BSMI 檢驗標識列表，共 {{len .Registrations}} 筆">
+<link rel="canonical" href="{{.CanonicalURL}}">
+<meta property="og:title" content="統編 {{.TaxID}} — BSMI 檢驗標識查詢">
+<meta property="og:description" content="統編 {{.TaxID}} 的 BSMI 檢驗標識列表，共 {{len .Registrations}} 筆">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{.CanonicalURL}}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="統編 {{.TaxID}} — BSMI 檢驗標識查詢">
+<meta name="twitter:description" content="統編 {{.TaxID}} 的 BSMI 檢驗標識列表，共 {{len .Registrations}} 筆">
+<style>
+body { font-family: sans-serif; margin: 2em; }
+table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+th { background: #f5f5f5; }
+</style>
+{{template "sentry.html" .}}
+{{template "plausible.html" .}}
+</head>
+<body>
+{{template "header.html" .}}
+<h1>統編 {{.TaxID}}</h1>
+<p>共 {{len .Registrations}} 筆檢驗標識</p>
+<table>
+<thead>
+<tr>
+  <th>標識號碼</th>
+  <th>申請人</th>
+  <th>電話</th>
+</tr>
+</thead>
+<tbody>
+{{range $reg := .Registrations}}
+<tr>
+  <td><a href="/bsmi/{{$reg.ID}}">{{$reg.ID}}</a></td>
+  <td>{{$reg.Applicant}}</td>
+  <td>{{$reg.Phone}}</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+
+<h2>被授權資料</h2>
+{{if not .Authorizations}}
+<p>無被授權資料。</p>
+{{else}}
+<table>
+<thead>
+<tr>
+  <th>授權證號</th>
+  <th>證書編號</th>
+  <th>授權人名稱</th>
+  <th>主型式</th>
+  <th>被授權人名稱</th>
+  <th>授權有效時間</th>
+</tr>
+</thead>
+<tbody>
+{{range $auth := .Authorizations}}
+<tr>
+  <td>{{$auth.ID}}</td>
+  <td>{{$auth.CertificateID}}</td>
+  <td>{{$auth.AuthorizerName}}</td>
+  <td>{{$auth.MainModel}}</td>
+  <td>{{$auth.AuthorizeeName}}</td>
+  <td>{{$auth.ValidDate}}</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{end}}
+</body>
+</html>

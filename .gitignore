@@ -1,7 +1,13 @@
 .env
-.env.deploy.tmp
+.env.deploy.*
 ansible/lib/
 node_modules/
 prisma/dev.db
 src/generated/
 *.min.js
+!internal/web/static/sentry.min.js
+dist/
+*.db
+*.db-shm
+*.db-wal
+GNUmakefile.local

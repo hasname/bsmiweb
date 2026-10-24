@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{.Registration.ID}} — BSMI 檢驗標識查詢</title>
+<meta name="description" content="BSMI 檢驗標識 {{.Registration.ID}} — {{.Registration.Applicant}}（統編 {{.Registration.TaxID}}），共 {{len .Registration.Certificates}} 張證書">
+<link rel="canonical" href="{{.CanonicalURL}}">
+<link rel="alternate" type="application/atom+xml" title="Atom feed" href="/atom.xml">
+<meta property="og:title" content="{{.Registration.ID}} — BSMI 檢驗標識查詢">
+<meta property="og:description" content="{{.Registration.Applicant}}（統編 {{.Registration.TaxID}}）— 共 {{len .Registration.Certificates}} 張證書">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{.CanonicalURL}}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{.Registration.ID}} — BSMI 檢驗標識查詢">
+<meta name="twitter:description" content="{{.Registration.Applicant}}（統編 {{.Registration.TaxID}}）— 共 {{len .Registration.Certificates}} 張證書">
+<script type="application/ld+json">
+{{.Organization}}
+</script>
+<style>
+body { font-family: sans-serif; margin: 2em; }
+table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+th { background: #f5f5f5; }
+dl { display: grid; grid-template-columns: 8em 1fr; align-items: baseline; margin: 0; }
+dt { font-weight: bold; }
+dd { margin: 0; }
+</style>
+{{template "sentry.html" .}}
+{{template "plausible.html" .}}
+</head>
+<body>
+{{template "header.html" .}}
+<h1>檢驗標識 {{.Registration.ID}}</h1>
+
+<h2>廠商資料</h2>
+<dl>
+  <dt>標識號碼</dt><dd>{{.Registration.ID}}</dd>
+  <dt>統編</dt><dd><a href="/ban/{{.Registration.TaxID}}">{{.Registration.TaxID}}</a></dd>
+  <dt>申請人</dt><dd>{{.Registration.Applicant}}</dd>
+  <dt>聯絡地址</dt><dd>{{.Registration.ContactAddr}}</dd>
+  <dt>公司地址</dt><dd>{{.Registration.CompanyAddr}}</dd>
+  <dt>電話</dt><dd>{{.Registration.Phone}}</dd>
+  {{if .Registration.Note}}
+  <dt>備註</dt><dd>{{.Registration.Note}}</dd>
+  {{end}}
+</dl>
+
+<h2>證書列表</h2>
+{{if not .Registration.Certificates}}
+<p>無證書資料。</p>
+{{else}}
+<table>
+<thead>
+<tr>
+  <th>證書編號</th>
+  <th>有效期間</th>
+  <th style="white-space: nowrap">狀態</th>
+  <th>產品名稱</th>
+  <th>主型式</th>
+  <th>系列型號</th>
+  <th style="white-space: nowrap">發證單位</th>
+</tr>
+</thead>
+<tbody>
+{{range $cert := .Registration.Certificates}}
+<tr>
+  <td>{{$cert.ID}}</td>
+  <td>{{$cert.ValidDate}}</td>
+  <td>{{$cert.Status}}</td>
+  <td>{{$cert.ProductName}}</td>
+  <td>{{$cert.MainModel}}</td>
+  <td>{{series $cert.SeriesModels}}</td>
+  <td>{{$cert.Issuer}}</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{end}}
+
+<h2>授權資料</h2>
+{{if not .Authorizations}}
+<p>無授權資料。</p>
+{{else}}
+<table>
+<thead>
+<tr>
+  <th>授權證號</th>
+  <th>證書編號</th>
+  <th>授權人名稱</th>
+  <th>主型式</th>
+  <th>被授權人名稱</th>
+  <th>被授權人統編</th>
+  <th>授權有效時間</th>
+</tr>
+</thead>
+<tbody>
+{{range $auth := .Authorizations}}
+<tr>
+  <td>{{$auth.ID}}</td>
+  <td>{{$auth.CertificateID}}</td>
+  <td>{{$auth.AuthorizerName}}</td>
+  <td>{{$auth.MainModel}}</td>
+  <td>{{$auth.AuthorizeeName}}</td>
+  <td><a href="/ban/{{$auth.AuthorizeeTaxID}}">{{$auth.AuthorizeeTaxID}}</a></td>
+  <td>{{$auth.ValidDate}}</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{end}}
+</body>
+</html>
